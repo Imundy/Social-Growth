@@ -7,6 +7,11 @@ const styles = {
     backgroundColor: colors.blue,
     justifyContent: 'center',
     paddingTop: 40,
+    paddingBottom: 20,
+    shadowColor: 'rgba(0, 0, 0, 0.4)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
   },
   connectButton: {
     justifyContent: 'center',
@@ -21,7 +26,35 @@ const styles = {
   buttonContainer: {
     width: '100%',
     alignItems: 'flex-end',
-    margin: 20,
+    marginHorizontal: 20,
+    marginTop: 20,
+  },
+  searchContainer: {
+    justifyContent: 'center',
+    maxWidth: '100%',
+    alignItems: 'center',
+    marginVertical: 12,
+    flexDirection: 'row',
+    borderRadius: 4,
+    shadowColor: 'rgba(0, 0, 0, 0.4)',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+  },
+  input: {
+    height: 40,
+    backgroundColor: 'white',
+    maxWidth: '70%',
+    width: '100%',
+    padding: 12,
+    fontSize: 16,
+  },
+  searchButton: {
+    backgroundColor: colors.blue,
+    height: 40,
+    width: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 };
 
