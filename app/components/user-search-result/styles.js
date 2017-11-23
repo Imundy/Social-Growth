@@ -23,6 +23,12 @@ const styles = {
     color: colors.blue,
     fontWeight: 'bold',
     fontSize: 16,
+    marginRight: 4,
+  },
+  nameContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
   },
   followerCount: {
     color: '#999',

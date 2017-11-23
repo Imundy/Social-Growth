@@ -142,6 +142,7 @@ const mapTwitterUser = user => ({
   profileImage: user.profile_image_url_https,
   following: user.following,
   bio: user.description,
+  verified: user.verified,
 });
 
 const TwitterApp = new StackNavigator({

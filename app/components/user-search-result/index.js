@@ -13,7 +13,8 @@ export default class UserSearchResult extends PureComponent {
       displayName: PropTypes.string.isRequired,
       followerCount: PropTypes.number.isRequired,
       profileImage: PropTypes.string.isRequired,
-      following: PropTypes.bool.isRequired,
+      following: PropTypes.bool,
+      verified: PropTypes.bool,
       bio: PropTypes.string,
     }).isRequired,
     followUser: PropTypes.func.isRequired,
@@ -43,7 +44,10 @@ export default class UserSearchResult extends PureComponent {
           source={{ uri: user.profileImage }}
         />
         <View style={styles.profileInfo}>
-          <Text style={styles.profileName}>{user.displayName}</Text>
+          <View style={styles.nameContainer}>
+            <Text style={styles.profileName}>{user.displayName}</Text>
+            {user.verified ? <SvgUri source={require('../../icons/svg/blue-verified-check.svg')} height="16" width="16" /> : null}
+          </View>
           <Text style={styles.followerCount}>{`${numberWithCommas(user.followerCount)} followers`}</Text>
         </View>
         { this.renderFollowing(user, followUser) }
