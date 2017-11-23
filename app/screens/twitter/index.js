@@ -50,10 +50,11 @@ export default class Twitter extends Component {
     }
   }
 
-  follow = async (name, index) => {
-    const user = await this._twitterClient.post('friendships/create', { mame: name });
+  follow = async (id) => {
+    await this._twitterClient.post('friendships/create', { user_id: id });
     const { searchResults } = this.state;
-    searchResults[index] = user;
+    const index = searchResults.findIndex(x => x.id === id);
+    searchResults[index].following = true;
     this.setState({ searchResults });
   }
 
@@ -62,10 +63,9 @@ export default class Twitter extends Component {
     this.setState({ searchResults: response, page: 1 });
   }
 
-  loadMoreSearchResults = () => {
-    this._twitterClient.get('users/search', { q: this.state.searchText, page: this.state.page + 1 }).then(response => {
-      this.setState(state => ({ searchResults: [...state.searchResults, ...response], page: state.page + 1 }));
-    });
+  loadMoreSearchResults = async () => {
+    const response = await this._twitterClient.get('users/search', { q: this.state.searchText, page: this.state.page + 1 });
+    this.setState(state => ({ searchResults: [...state.searchResults, ...response], page: state.page + 1 }));
   }
 
   searchTextChange = (text) => {

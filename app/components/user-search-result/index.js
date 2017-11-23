@@ -27,7 +27,7 @@ export default class UserSearchResult extends PureComponent {
     }
 
     return (
-      <TouchableOpacity style={styles.addButtonContainer} onPress={followUser}>
+      <TouchableOpacity style={styles.addButtonContainer} onPress={() => followUser(user.id)}>
         <View style={styles.addButton}>
           <SvgUri source={require('../../icons/svg/white-plus-icon.svg')} height="40" width="40" />
         </View>
