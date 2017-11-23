@@ -9,7 +9,7 @@ export default class UserSearchResult extends PureComponent {
   static propTypes = {
     user: PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      name: PropTypes.string.isRequired,
+      name: PropTypes.string,
       displayName: PropTypes.string.isRequired,
       followerCount: PropTypes.number.isRequired,
       profileImage: PropTypes.string.isRequired,
