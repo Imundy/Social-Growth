@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 import {
@@ -11,45 +11,44 @@ import {
 import styles from './styles.js';
 import colors from '../../styles/colors.js';
 
-export default class Header extends Component {
-  static propTypes = {
-    title: PropTypes.string.isRequired,
-    titleSize: PropTypes.number.isRequired,
-    subtext: PropTypes.string,
-    search: PropTypes.func,
-    connect: PropTypes.func,
-    account: PropTypes.shape({
-      name: PropTypes.string,
-    }),
-  };
+const Header = ({ title, titleSize, subtext, search, searchTextChange, connect, account }) => (
+  <View style={styles.headerContainer}>
+    <Text style={{ fontWeight: '300', color: colors.lightBlue, fontSize: titleSize }}>{title}</Text>
+    <Text style={{ fontWeight: '300', color: 'white', fontSize: 16, textAlign: 'center' }}>{subtext}</Text>
+    {connect != null && renderConnect(account, connect)}
+    {searchTextChange != null && search != null && renderSearch(searchTextChange, search)}
+  </View>
+);
 
-  renderConnect = () => (
-    <View style={styles.buttonContainer}>
-      { this.props.account ?
-        <Text style={styles.account}>{this.props.account.name}</Text> :
-        <TouchableOpacity style={styles.connectButton} onPress={this.props.connect}>
-          <Text style={{ color: 'white', fontWeight: 'bold' }}>Connect</Text>
-        </TouchableOpacity> }
-    </View>
-  );
+Header.propTypes = {
+  title: PropTypes.string.isRequired,
+  titleSize: PropTypes.number.isRequired,
+  subtext: PropTypes.string,
+  search: PropTypes.func,
+  searchTextChange: PropTypes.func,
+  connect: PropTypes.func,
+  account: PropTypes.shape({
+    name: PropTypes.string,
+  }),
+};
 
-  renderSearch = () => (
-    <View style={styles.searchContainer}>
-      <TextInput style={styles.input} onChangeText={this.props.searchTextChange} placeholder="Search" placeholderTextColor="#999" />
-      <TouchableOpacity style={styles.searchButton} onPress={this.props.search}>
-        <Text style={{ color: 'white' }}>A</Text>
-      </TouchableOpacity>
-    </View>
-  )
+const renderConnect = (account, connect) => (
+  <View style={styles.buttonContainer}>
+    { account ?
+      <Text style={styles.account}>{account.name}</Text> :
+      <TouchableOpacity style={styles.connectButton} onPress={connect}>
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>Connect</Text>
+      </TouchableOpacity> }
+  </View>
+);
 
-  render() {
-    return (
-      <View style={styles.headerContainer}>
-        <Text style={{ fontWeight: '300', color: colors.lightBlue, fontSize: this.props.titleSize }}>{this.props.title}</Text>
-        <Text style={{ fontWeight: '300', color: 'white', fontSize: 16, textAlign: 'center' }}>{this.props.subtext}</Text>
-        {this.props.connect != null && this.renderConnect()}
-        {this.props.searchTextChange != null && this.props.search != null && this.renderSearch()}
-      </View>
-    );
-  }
-}
+const renderSearch = (searchTextChange, search) => (
+  <View style={styles.searchContainer}>
+    <TextInput style={styles.input} onChangeText={searchTextChange} placeholder="Search" placeholderTextColor="#999" />
+    <TouchableOpacity style={styles.searchButton} onPress={search}>
+      <Text style={{ color: 'white' }}>A</Text>
+    </TouchableOpacity>
+  </View>
+);
+
+export default Header;
