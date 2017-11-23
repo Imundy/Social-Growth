@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import { ScrollView, View, AsyncStorage, FlatList } from 'react-native';
+import { ScrollView, View, AsyncStorage } from 'react-native';
 import twitter, { auth } from 'react-native-twitter';
 import { StackNavigator } from 'react-navigation';
 import SvgUri from 'react-native-svg-uri';
 
 import Header from '../../components/header';
 import Card from '../../components/card';
-import UserSearchResult from '../../components/user-search-result';
+import UserSearch from './user-search';
 import config from '../../config';
 import colors from '../../styles/colors';
 import styles from './styles';
@@ -79,7 +79,7 @@ export default class Twitter extends Component {
   }
 
   render() {
-    const { twitterTokens, view, searchResults } = this.state;
+    const { twitterTokens, view, searchResults, searchText } = this.state;
 
     return (
       <View style={styles.container}>
@@ -121,29 +121,6 @@ const Cards = ({ navigation }) => (
     </View>
   </ScrollView>
 );
-
-const UserSearch = ({ screenProps }) => (
-  <FlatList
-    contentContainerStyle={{ backgroundColor: 'white' }}
-    data={screenProps.searchResults}
-    keyExtractor={item => item.id}
-    renderItem={({ item }) => renderTwitterResult(item, screenProps.followUser)}
-    onEndReached={screenProps.loadMore}
-  />
-);
-
-const renderTwitterResult = (item, followUser) => (<UserSearchResult user={mapTwitterUser(item)} followUser={followUser} />);
-
-const mapTwitterUser = user => ({
-  id: user.id,
-  name: user.screen_name,
-  displayName: user.name,
-  followerCount: user.followers_count,
-  profileImage: user.profile_image_url_https,
-  following: user.following,
-  bio: user.description,
-  verified: user.verified,
-});
 
 const TwitterApp = new StackNavigator({
   Home: {
