@@ -15,8 +15,8 @@ const Header = ({ title, titleSize, subtext, search, searchTextChange, connect, 
   <View style={styles.headerContainer}>
     <Text style={{ fontWeight: '300', color: colors.lightBlue, fontSize: titleSize }}>{title}</Text>
     <Text style={{ fontWeight: '300', color: 'white', fontSize: 16, textAlign: 'center' }}>{subtext}</Text>
-    {connect != null && renderConnect(account, connect)}
     {searchTextChange != null && search != null && renderSearch(searchTextChange, search)}
+    {connect != null && renderConnect(account, connect)}
   </View>
 );
 

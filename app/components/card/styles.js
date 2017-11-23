@@ -14,7 +14,7 @@ const styles = {
   description: {
     flex: 4,
     fontSize: 26,
-    color: 'white'
+    color: 'white',
   },
   title: {
     fontSize: 12,
@@ -26,7 +26,7 @@ const styles = {
     marginTop: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   toggleContainer: {
     width: 70,
@@ -45,14 +45,14 @@ const styles = {
     borderRadius: 10,
     height: 20,
     justifyContent: 'center',
-    paddingHorizontal: 2
+    paddingHorizontal: 2,
   },
   toggleButton: {
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#FFF'
-  }
+    backgroundColor: '#FFF',
+  },
 };
 
 export default styles;

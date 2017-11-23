@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
-import { ScrollView, View, AsyncStorage } from 'react-native';
-import { auth } from 'react-native-twitter';
+import { ScrollView, View, AsyncStorage, FlatList, Text, StyleSheet } from 'react-native';
+import twitter, { auth } from 'react-native-twitter';
+import { StackNavigator } from 'react-navigation';
 
 import Header from '../../components/header';
 import Card from '../../components/card';
 import TwitterIcon from '../../icons/twitter-icon';
+import TwitterUserCard from '../../components/twitter-user-card';
 import config from '../../config';
 import colors from '../../styles/colors';
 import styles from './styles';
@@ -12,14 +14,26 @@ import styles from './styles';
 export default class Twitter extends Component {
   state = {
     connected: false,
-    twitter: null,
+    twitterTokens: null,
+    view: views.Home,
   }
 
   async componentDidMount() {
-    const twitter = await AsyncStorage.getItem('twitterTokens');
-    if (twitter) {
-      this.setState({ connected: true, twitter: JSON.parse(twitter) }); // eslint-disable-line
+    const twitterTokens = await AsyncStorage.getItem('twitterTokens');
+    if (twitterTokens) {
+      this.setState({ connected: true, twitterTokens: JSON.parse(twitterTokens) }, this.createTwitterClient); // eslint-disable-line
     }
+  }
+
+  createTwitterClient = () => {
+    const { accessToken, accessTokenSecret } = this.state.twitterTokens;
+    const clients = twitter({
+      consumerKey: config.twitterConsumerToken,
+      consumerSecret: config.twitterConsumerSecret,
+      accessToken,
+      accessTokenSecret,
+    });
+    this._twitterClient = clients.rest;
   }
 
   signIn = async () => {
@@ -30,36 +44,107 @@ export default class Twitter extends Component {
             );
 
       AsyncStorage.setItem('twitterTokens', JSON.stringify(twitterResponse));
-      this.setState({ connected: true, twitter: twitterResponse });
+      this.setState({ connected: true, twitterTokens: twitterResponse }, this.createTwitterClient);
     } catch (error) {
       console.warn(error);
     }
   }
 
+  search = async () => {
+    const response = await this._twitterClient.get('users/search', { q: this.state.searchText });
+    this.setState({ searchResults: response, page: 1 });
+  }
+
+  loadMoreSearchResults = () => {
+    this._twitterClient.get('users/search', { q: this.state.searchText, page: this.state.page + 1 }).then(response => {
+      this.setState(state => ({ searchResults: [...state.searchResults, ...response], page: state.page + 1 }));
+    });
+  }
+
+  searchTextChange = (text) => {
+    this.setState({ searchText: text });
+  }
+
+  navigationStateChange = (prevState, currentState) => {
+    this.setState({
+      view: views[currentState.routes[currentState.index].routeName],
+    });
+  }
+
   render() {
-    const { twitter } = this.state;
+    const { twitterTokens, view, searchResults } = this.state;
+
     return (
       <View style={styles.container}>
-        <ScrollView>
-          <Header
-            title="TWITTER"
-            titleSize={36}
-            subtext="Twitter automations and actions can help you manage followers and grow your audience."
-            connect={this.signIn}
-            account={twitter ? { name: `@${twitter.name}` } : null}
-          />
-          <View style={styles.cardContainer}>
-            <Card
-              description="Search people based on interests and location."
-              title="KEYWORD SEARCH"
-              color={colors.bluegreen}
-              logo={TwitterIcon}
-              toggle={() => { this.setState({ on: !this.state.on }); }}
-              onPress={() => { console.warn('card pressed'); }}
-            />
-          </View>
-        </ScrollView>
+        <Header
+          title="TWITTER"
+          titleSize={36}
+          subtext={views[view.name].description}
+          connect={view.name === views.Home.name ? this.signIn : null}
+          search={views[view.name].searchable ? this.search : null}
+          searchTextChange={views[view.name].searchable ? this.searchTextChange : null}
+          account={twitterTokens ? { name: `@${twitterTokens.name}` } : null}
+        />
+        <TwitterApp
+          onNavigationStateChange={this.navigationStateChange}
+          screenProps={{
+            name: views[view.name].name,
+            description: views[view.name].description,
+            searchResults,
+            loadMore: this.loadMoreSearchResults,
+          }}
+        />
       </View>
     );
   }
 }
+
+const Cards = ({ navigation }) => (
+  <ScrollView>
+    <View style={styles.cardContainer}>
+      <Card
+        description={views.UserSearch.description}
+        title="KEYWORD SEARCH"
+        color={colors.blueGreen}
+        logo={TwitterIcon}
+        toggle={() => {}}
+        onPress={() => { navigation.navigate('UserSearch'); }}
+      />
+    </View>
+  </ScrollView>
+);
+
+const UserSearch = ({ screenProps }) => (
+  <FlatList
+    contentContainerStyle={{ backgroundColor: 'white' }}
+    data={screenProps.searchResults}
+    keyExtractor={item => item.id}
+    renderItem={renderTwitterResult}
+    onEndReached={screenProps.loadMore}
+  />
+);
+
+const renderTwitterResult = ({ item }) => (<TwitterUserCard user={item} />);
+
+const TwitterApp = new StackNavigator({
+  Home: {
+    screen: Cards,
+  },
+  UserSearch: {
+    screen: UserSearch,
+  },
+}, {
+  headerMode: 'none',
+});
+
+const views = {
+  Home: {
+    name: 'Home',
+    description: 'Twitter automations and actions can help you manage followers and grow your audience.',
+  },
+  UserSearch: {
+    name: 'UserSearch',
+    description: 'Search people based on interests and location.',
+    searchable: true,
+  },
+};
