@@ -1,50 +1,68 @@
-import colors from '../../styles/colors';
-import { Dimensions, Platform } from 'react-native';
-
-const screenWidth = Dimensions.get('screen').width;
+import colors from '../../styles/colors.js';
 
 const styles = {
   headerContainer: {
-    width: screenWidth,
-    paddingTop: Platform.OS === "ios" ? 40 : 0,
-    height: 170,
+    alignItems: 'center',
+    width: '100%',
     backgroundColor: colors.blue,
-    alignItems: 'center'
+    justifyContent: 'center',
+    paddingTop: 40,
+    paddingBottom: 20,
+    shadowColor: 'rgba(0, 0, 0, 0.4)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
   },
-  title: {
-    fontSize: 36,
-    color: colors.lightBlue
+  connectButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 4,
+    borderColor: 'white',
+    borderWidth: 1,
+    width: 100,
+    height: 32,
+    marginRight: 20,
   },
-  description: {
-    marginTop: 4,
-    marginBottom: 16,
-    marginHorizontal: 16,
-    fontSize: 14,
-    color: 'white',
-    textAlign: 'center'
+  buttonContainer: {
+    width: '100%',
+    alignItems: 'flex-end',
+    marginHorizontal: 20,
+    marginTop: 20,
+  },
+  searchContainer: {
+    justifyContent: 'center',
+    maxWidth: '100%',
+    alignItems: 'center',
+    marginVertical: 12,
+    flexDirection: 'row',
+    borderRadius: 4,
+    shadowColor: 'rgba(0, 0, 0, 0.4)',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+  },
+  input: {
+    height: 40,
+    backgroundColor: 'white',
+    maxWidth: '70%',
+    width: '100%',
+    padding: 12,
+    fontSize: 16,
+  },
+  searchButton: {
+    backgroundColor: colors.blue,
+    height: 40,
+    width: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   account: {
     fontSize: 12,
-    width: screenWidth - 32,
     textAlign: 'right',
     fontWeight: 'bold',
-    color: 'white'
-  },
-  connectContainer: {
-    width: screenWidth,
-  },
-  connect: {
-    fontSize: 12,
-    paddingVertical: 2,
-    paddingHorizontal: 32,
-    marginRight: 16,
-    alignSelf: 'flex-end',
     color: 'white',
-    borderColor: 'white',
-    borderWidth: 1,
-    borderRadius: 6,
-    textAlign: 'right',
-  }
+    marginRight: 20,
+  },
 };
 
 export default styles;

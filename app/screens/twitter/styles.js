@@ -5,12 +5,11 @@ const styles = {
     width: Dimensions.get('screen').width,
     height: Dimensions.get('screen').height,
   },
-  otherContainer: {
+  cardContainer: {
     paddingVertical: 32,
-    height: 1000,
     justifyContent: 'flex-start',
     alignItems: 'center',
-  }
+  },
 };
 
 export default styles;

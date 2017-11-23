@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 
 import InstagramSearch from '../instagram/search';
-import Header from '../header';
+import Header from '../../components/header';
 import styles from './styles';
 import config from '../../config';
 
@@ -53,7 +53,12 @@ export default class InstagramSignin extends Component {
 
     return (
       <View style={styles.container}>
-        <Header header="INSTAGRAM" headerSize={36} subtext={labels.instagram} connect={this.instagramOAuth} />
+        <Header
+          title="INSTAGRAM"
+          headerSize={36}
+          subtext={labels.instagram}
+          connect={this.instagramOAuth}
+        />
         {this.state.isLoading &&
           <View style={{ width: '80%', height: 300 }}>
             <WebView

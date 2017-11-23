@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 
-import Header from '../header';
+import Header from '../../components/header';
 import config from '../../config';
 
 export default class Search extends Component {

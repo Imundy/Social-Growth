@@ -34,7 +34,7 @@ Card.propTypes = {
   color: PropTypes.string.isRequired,
   onPress: PropTypes.func.isRequired,
   logo: PropTypes.func.isRequired,
-  canToggle: PropTypes.bool.isRequired,
+  canToggle: PropTypes.bool,
   toggle: PropTypes.func,
   on: PropTypes.bool,
 };
