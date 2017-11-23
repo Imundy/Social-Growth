@@ -6,7 +6,7 @@ import { StackNavigator } from 'react-navigation';
 import Header from '../../components/header';
 import Card from '../../components/card';
 import TwitterIcon from '../../icons/twitter-icon';
-import TwitterUserCard from '../../components/twitter-user-card';
+import UserSearchResult from '../../components/user-search-result';
 import config from '../../config';
 import colors from '../../styles/colors';
 import styles from './styles';
@@ -48,6 +48,13 @@ export default class Twitter extends Component {
     } catch (error) {
       console.warn(error);
     }
+  }
+
+  follow = async (name, index) => {
+    const user = await this._twitterClient.post('friendships/create', { mame: name });
+    const { searchResults } = this.state;
+    searchResults[index] = user;
+    this.setState({ searchResults });
   }
 
   search = async () => {
@@ -92,6 +99,7 @@ export default class Twitter extends Component {
             description: views[view.name].description,
             searchResults,
             loadMore: this.loadMoreSearchResults,
+            followUser: this.follow,
           }}
         />
       </View>
@@ -119,12 +127,22 @@ const UserSearch = ({ screenProps }) => (
     contentContainerStyle={{ backgroundColor: 'white' }}
     data={screenProps.searchResults}
     keyExtractor={item => item.id}
-    renderItem={renderTwitterResult}
+    renderItem={({ item }) => renderTwitterResult(item, screenProps.followUser)}
     onEndReached={screenProps.loadMore}
   />
 );
 
-const renderTwitterResult = ({ item }) => (<TwitterUserCard user={item} />);
+const renderTwitterResult = (item, followUser) => (<UserSearchResult user={mapTwitterUser(item)} followUser={followUser} />);
+
+const mapTwitterUser = user => ({
+  id: user.id,
+  name: user.screen_name,
+  displayName: user.name,
+  followerCount: user.followers_count,
+  profileImage: user.profile_image_url_https,
+  following: user.following,
+  bio: user.description,
+});
 
 const TwitterApp = new StackNavigator({
   Home: {
