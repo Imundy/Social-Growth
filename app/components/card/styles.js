@@ -23,7 +23,8 @@ const styles = {
   },
   cardHeader: {
     flex: 1,
-    marginTop: 20,
+    marginTop: 12,
+    marginBottom: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -52,6 +53,10 @@ const styles = {
     height: 16,
     borderRadius: 8,
     backgroundColor: '#FFF',
+  },
+  logo: {
+    marginRight: 8,
+    marginTop: 0,
   },
 };
 

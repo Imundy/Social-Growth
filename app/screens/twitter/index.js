@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import { ScrollView, View, AsyncStorage, FlatList, Text, StyleSheet } from 'react-native';
+import { ScrollView, View, AsyncStorage, FlatList } from 'react-native';
 import twitter, { auth } from 'react-native-twitter';
 import { StackNavigator } from 'react-navigation';
+import SvgUri from 'react-native-svg-uri';
 
 import Header from '../../components/header';
 import Card from '../../components/card';
-import TwitterIcon from '../../icons/twitter-icon';
 import UserSearchResult from '../../components/user-search-result';
 import config from '../../config';
 import colors from '../../styles/colors';
@@ -114,7 +114,7 @@ const Cards = ({ navigation }) => (
         description={views.UserSearch.description}
         title="KEYWORD SEARCH"
         color={colors.blueGreen}
-        logo={TwitterIcon}
+        logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-twitter-icon.svg')} />)}
         toggle={() => {}}
         onPress={() => { navigation.navigate('UserSearch'); }}
       />

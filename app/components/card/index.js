@@ -12,13 +12,15 @@ const Card = ({ description, title, onPress, logo, canToggle, toggle, on, color 
           {canToggle ? <View style={styles.toggleContainer}>
             <TouchableOpacity onPress={toggle}>
               <View style={{ alignItems: on ? 'flex-end' : 'flex-start', ...styles.toggleButtonContainer }}>
-                <View style={styles.toggleButton}></View>
+                <View style={styles.toggleButton} />
               </View>
             </TouchableOpacity>
             <Text style={styles.on}>{on ? 'ON' : 'OFF'}</Text>
           </View> : null}
         </View>
-        {logo({ width: '40', height: '40', color: '#FFF', scale: '0.8' })}
+        <View style={styles.logo}>
+          {logo()}
+        </View>
       </View>
       <Text style={styles.description}>{description}</Text>
       <Text style={styles.title}>{title}</Text>
