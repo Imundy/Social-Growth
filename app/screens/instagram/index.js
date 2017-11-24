@@ -15,6 +15,7 @@ import Header from '../../components/header';
 import Search from './search';
 import styles from './styles';
 import config from '../../config';
+import { fetchUtil } from './util';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -25,6 +26,8 @@ export default class Instagram extends Component {
     error: null,
     url: 'https://instagram.com/accounts/logout',
     view: views.Home,
+    currentPostCount: 0,
+    currentRequestCount: 0,
   }
 
   componentDidMount = async () => {
@@ -33,11 +36,27 @@ export default class Instagram extends Component {
       accessToken: token || '',
     });
 
+
     const currentUser = await AsyncStorage.getItem('currentUserId');
-    if (currentUser == null) {
-      const me = await fetch(`https://api.instagram.com/v1/users/self/?access_token=${token}`).then(response => response.json());
+    if (currentUser == null && token != null) {
+      const me = await this.networkRequest(`https://api.instagram.com/v1/users/self/?access_token=${token}`).then(response => response.json());
       await AsyncStorage.setItem('currentUserId', me.data.id);
     }
+  }
+
+  networkRequest = async (url, options) => {
+    const request = await fetchUtil(url, options);
+    if (options != null && options.method === 'POST') {
+      this.setState({
+        currentPostCount: request.count,
+      });
+    } else {
+      this.setState({
+        currentRequestCount: request.count,
+      });
+    }
+
+    return request.request;
   }
 
   instagramOAuth = () => {
@@ -95,7 +114,7 @@ export default class Instagram extends Component {
     }
 
     // eslint-disable no-undef
-    fetch(`https://api.instagram.com/v1/tags/search?q=${query}&access_token=${this.state.accessToken}`)
+    this.networkRequest(`https://api.instagram.com/v1/tags/search?q=${query}&access_token=${this.state.accessToken}`)
       .then((res) => {
         if (res.status < 200 || res.status >= 300) {
           this.setState({
@@ -124,7 +143,7 @@ export default class Instagram extends Component {
         <Header
           title="INSTAGRAM"
           titleSize={36}
-          subtext={labels.instagram}
+          subtext={`${labels.instagram} ${this.state.currentPostCount} ${this.state.currentRequestCount}`}
           connect={this.state.accessToken === '' ? this.instagramOAuth : null}
           search={views[view.name].searchable ? this.search : null}
           searchTextChange={views[view.name].searchable ? this.searchTextChange : null}
@@ -150,6 +169,7 @@ export default class Instagram extends Component {
             followUser: this.follow,
             isSearchingTags: this.state.isSearching,
             accessToken: this.state.accessToken,
+            request: this.networkRequest,
           }}
         />
       </View>

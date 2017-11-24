@@ -34,7 +34,7 @@ export default class Search extends Component {
   followUser = async (userId) => {
     const form = new FormData();
     form.append('action', 'follow');
-    const result = await fetch(`https://api.instagram.com/v1/users/${userId}/relationship?access_token=${this.props.screenProps.accessToken}&action=follow`, { method: 'POST', body: form })
+    await this.props.screenProps.request(`https://api.instagram.com/v1/users/${userId}/relationship?access_token=${this.props.screenProps.accessToken}&action=follow`, { method: 'POST', body: form });
   }
 
   fetchUsers = (query) => {
@@ -42,7 +42,7 @@ export default class Search extends Component {
       isSearching: true,
     });
 
-    fetch(`https://api.instagram.com/v1/tags/${query}/media/recent?count=50&access_token=${this.props.screenProps.accessToken}`)
+    this.props.screenProps.request(`https://api.instagram.com/v1/tags/${query}/media/recent?count=50&access_token=${this.props.screenProps.accessToken}`)
       .then((res) => {
         if (res.status < 200 || res.status >= 300) {
           this.setState({
@@ -57,7 +57,7 @@ export default class Search extends Component {
         try {
           let results = await Promise.all(
             ids.map(id =>
-              fetch(`https://api.instagram.com/v1/users/${id}/relationship?access_token=${this.props.screenProps.accessToken}`)
+              this.props.screenProps.request(`https://api.instagram.com/v1/users/${id}/relationship?access_token=${this.props.screenProps.accessToken}`)
                 .then(response => response.json())
                 .then(res => ({
                   ...result.data.find(x => x.user.id === id).user,
@@ -67,7 +67,7 @@ export default class Search extends Component {
 
           results = await Promise.all(
             results.filter(user => user.relationship.following === 'none').map(user =>
-              fetch(`https://api.instagram.com/v1/users/${user.id}/?access_token=${this.props.screenProps.accessToken}`)
+              this.props.screenProps.request(`https://api.instagram.com/v1/users/${user.id}/?access_token=${this.props.screenProps.accessToken}`)
                 .then(response => response.json())
                 .then(res => ({
                   ...user,
@@ -137,7 +137,7 @@ export default class Search extends Component {
 const numberWithCommas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 const followerStatuses = {
-  'follows': 'Following',
-  'requested': 'Requested'
-}
+  follows: 'Following',
+  requested: 'Requested',
+};
 
