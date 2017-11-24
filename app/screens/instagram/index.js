@@ -13,9 +13,10 @@ import colors from '../../styles/colors';
 import Card from '../../components/card';
 import Header from '../../components/header';
 import Search from './search';
+import Manage from './manage';
 import styles from './styles';
 import config from '../../config';
-import { fetchUtil } from './util';
+import { fetchUtil, loadKnownFollowers, addKnownFollowers } from './util';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -92,7 +93,6 @@ export default class Instagram extends Component {
     });
   }
 
-
   auth = () => {
     this.setState({
       url: `https://instagram.com/oauth/authorize/?client_id=${config.instagramToken}&redirect_uri=${config.instagramRedirect}&response_type=token&scope=public_content+follower_list+relationships`,
@@ -113,7 +113,6 @@ export default class Instagram extends Component {
       return;
     }
 
-    // eslint-disable no-undef
     this.networkRequest(`https://api.instagram.com/v1/tags/search?q=${query}&access_token=${this.state.accessToken}`)
       .then((res) => {
         if (res.status < 200 || res.status >= 300) {
@@ -136,6 +135,37 @@ export default class Instagram extends Component {
     });
   }
 
+  addRelationship = async (users) => {
+    const knownIds = await loadKnownFollowers();
+    const followers = await Promise.all(
+      users.filter(x => knownIds.indexOf(x.id.toString()) === -1)
+        .map(user =>
+          this.networkRequest(`https://api.instagram.com/v1/users/${user.id}/relationship?access_token=${this.state.accessToken}`)
+            .then(res => res.json())
+            .then(result => ({
+              ...user,
+              relationship: result.data,
+            })),
+        ),
+    );
+
+    await addKnownFollowers(followers.filter(user => user.relationship.incoming_status === 'followed_by').map(user => user.id));
+
+    return followers.concat(users.map(user => ({ ...user, relationship: { incoming_status: 'followed_by', outgoing_status: 'follows' } })));
+  }
+
+  loadFollowers = async () => {
+    const response = await this.networkRequest(`https://api.instagram.com/v1/users/self/follows?count=500&access_token=${this.state.accessToken}`).then(res => res.json());
+    const results = await this.addRelationship(response.data);
+    this.setState({
+      following: results,
+    });
+  }
+
+  unfollow = async (userId) => {
+    console.log(userId);
+  }
+
   render() {
     const { view, results } = this.state;
     return (
@@ -149,9 +179,9 @@ export default class Instagram extends Component {
           searchTextChange={views[view.name].searchable ? this.searchTextChange : null}
         />
         {this.state.isAuthenticating && <View style={{ width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.4)', position: 'absolute', justifyContent: 'center' }}>
-          <View style={{ width: windowWidth, height: 250, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ width: windowWidth, height: '100%', justifyContent: 'center', alignItems: 'center' }}>
             <WebView
-              style={{ width: windowWidth, height: 250 }}
+              style={{ width: windowWidth, height: '100%' }}
               source={{ uri: this.state.url }}
               ref={(ref) => { this.webview = ref; }}
               onNavigationStateChange={this.onNavigationStateChange}
@@ -170,6 +200,9 @@ export default class Instagram extends Component {
             isSearchingTags: this.state.isSearching,
             accessToken: this.state.accessToken,
             request: this.networkRequest,
+            following: this.state.following,
+            loadFollowers: this.loadFollowers,
+            unfollow: this.unfollow,
           }}
         />
       </View>
@@ -188,6 +221,14 @@ const Cards = ({ navigation }) => (
         toggle={() => {}}
         onPress={() => { navigation.navigate('Search'); }}
       />
+      <Card
+        description={views.Manage.description}
+        title="MANAGE AUDIENCE"
+        color={colors.blueGreen}
+        logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/instagram-logo.svg')} />)}
+        toggle={() => {}}
+        onPress={() => { navigation.navigate('Manage'); }}
+      />
     </View>
   </ScrollView>
 );
@@ -203,6 +244,9 @@ const InstagramApp = new StackNavigator({
   Search: {
     screen: Search,
   },
+  Manage: {
+    screen: Manage,
+  },
 }, {
   headerMode: 'none',
 });
@@ -216,5 +260,9 @@ const views = {
     name: 'Search',
     description: 'Search people based on interests and location.',
     searchable: true,
+  },
+  Manage: {
+    name: 'Manage',
+    description: 'Manage accounts you follow.',
   },
 };

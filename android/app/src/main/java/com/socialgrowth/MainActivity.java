@@ -1,6 +1,7 @@
 package com.socialgrowth;
 
 import com.facebook.react.ReactActivity;
+import com.wix.interactable.Interactable;
 
 public class MainActivity extends ReactActivity {
 

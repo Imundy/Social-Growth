@@ -11,6 +11,7 @@ import {
 import UserSearchResult from '../../components/user-search-result';
 import styles from './styles';
 import colors from '../../styles/colors';
+import { loadKnownFollowers, addKnownFollowers } from './util';
 
 export default class Search extends Component {
   state = {
@@ -37,10 +38,12 @@ export default class Search extends Component {
     await this.props.screenProps.request(`https://api.instagram.com/v1/users/${userId}/relationship?access_token=${this.props.screenProps.accessToken}&action=follow`, { method: 'POST', body: form });
   }
 
-  fetchUsers = (query) => {
+  fetchUsers = async (query) => {
     this.setState({
       isSearching: true,
     });
+
+    const knownFollowers = await loadKnownFollowers();
 
     this.props.screenProps.request(`https://api.instagram.com/v1/tags/${query}/media/recent?count=50&access_token=${this.props.screenProps.accessToken}`)
       .then((res) => {
@@ -57,16 +60,21 @@ export default class Search extends Component {
         try {
           let results = await Promise.all(
             ids.map(id =>
+              (knownFollowers.indexOf(id.toString()) === -1 ?
               this.props.screenProps.request(`https://api.instagram.com/v1/users/${id}/relationship?access_token=${this.props.screenProps.accessToken}`)
                 .then(response => response.json())
                 .then(res => ({
                   ...result.data.find(x => x.user.id === id).user,
                   relationship: res.data,
+                })) :
+                ({
+                  ...result.data.find(x => x.user.id === id).user,
+                  relationship: { incoming_status: 'followed_by', outgoing_status: 'follows' },
                 })),
             ));
 
           results = await Promise.all(
-            results.filter(user => user.relationship.following === 'none').map(user =>
+            results.filter(user => user.relationship.outgoing_status !== 'none').map(user =>
               this.props.screenProps.request(`https://api.instagram.com/v1/users/${user.id}/?access_token=${this.props.screenProps.accessToken}`)
                 .then(response => response.json())
                 .then(res => ({
@@ -75,6 +83,8 @@ export default class Search extends Component {
                 })),
             ),
           );
+
+          await addKnownFollowers(results.filter(user => knownFollowers.indexOf(user.id.toString()) === -1 && user.relationship.outgoing_status === 'follows').map(user => user.id));
 
           this.setState({
             results,
@@ -94,8 +104,8 @@ export default class Search extends Component {
     </TouchableOpacity>
   )
 
-  renderUserResult = (item, followUser) => (
-    <UserSearchResult user={{ ...item, followText: followerStatuses[item.relationship.outgoing_status], following: item.relationship.outgoing_status !== 'none', displayName: item.full_name, profileImage: item.profile_picture, followerCount: item.counts.followed_by }} followUser={() => this.followUser(item.id)} />
+  renderUserResult = item => (
+    <UserSearchResult user={{ ...item, followStatus: followerStatuses[item.relationship.outgoing_status], following: item.relationship.outgoing_status !== 'none', displayName: item.full_name, profileImage: item.profile_picture, followerCount: item.counts.followed_by }} followUser={() => this.followUser(item.id)} />
   )
 
   render() {

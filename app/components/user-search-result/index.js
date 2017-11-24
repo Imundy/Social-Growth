@@ -32,7 +32,8 @@ export default class UserSearchResult extends PureComponent {
         <View style={styles.addButton}>
           <SvgUri source={require('../../icons/svg/white-plus-icon.svg')} height="40" width="40" />
         </View>
-      </TouchableOpacity>);
+      </TouchableOpacity>
+    );
   }
 
   render() {

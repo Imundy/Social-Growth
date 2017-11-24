@@ -3,6 +3,7 @@ const colors = {
   lightBlue: '#97FBFA',
   blueGreen: '#61D6D6',
   pink: '#EC7387',
+  pinkAlt: 'rgba(253, 115, 135, 0.4)',
 };
 
 export default colors;
