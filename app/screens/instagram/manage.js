@@ -13,15 +13,15 @@ export default class Manage extends Component {
     this.props.screenProps.loadFollowers();
   }
 
-  onStopDrag = (event, userId) => {
-    if (event.target > 100) {
+  onSnap = (event, userId) => {
+    if (event.nativeEvent.index === 0) {
       this.props.screenProps.unfollow(userId, 'unfollow');
     }
   }
 
   renderUserResult = item => (
     <View>
-      <View style={{ position: 'absolute', right: 0, height: 75, flexDirection: 'row', justifyContent: 'flex-end' }}>
+      <View style={{ position: 'absolute', right: 0, height: 83, flexDirection: 'row', justifyContent: 'flex-end' }}>
         <View
           style={{
             backgroundColor: colors.pinkAlt,
@@ -36,8 +36,8 @@ export default class Manage extends Component {
       </View>
       <Interactable.View
         horizontalOnly
-        snapPoints={[{ x: 0 }]}
-        onStop={event => this.onStopDrag(event, item.id)}
+        snapPoints={[{ x: -300 }, { x: 0 }]}
+        onSnap={event => this.onSnap(event, item.id)}
         style={{ backgroundColor: 'white' }}
         boundaries={{ left: -1000, right: 10 }}
       >

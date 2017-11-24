@@ -169,6 +169,9 @@ export default class Instagram extends Component {
     switch (action) {
       case 'unfollow':
         await removeKnownFollowing(userId);
+        this.setState({
+          following: this.state.following.filter(user => user.id !== userId),
+        });
         break;
       case 'follow':
         await addKnownFollowing(userId);

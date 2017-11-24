@@ -21,7 +21,8 @@ export default class Search extends Component {
 
   componentDidMount = async () => {
     const currentUserId = await AsyncStorage.getItem('currentUserId');
-    this.setState({ currentUserId });
+    const knownFollowers = await loadKnownFollowers();
+    this.setState({ currentUserId, knownFollowers });
   }
 
   componentWillReceiveProps = (nextProps) => {
@@ -34,6 +35,9 @@ export default class Search extends Component {
 
   followUser = async (userId) => {
     this.props.screenProps.follow(userId, 'follow');
+    this.setState({
+      results: this.state.results.filter(x => x.id !== userId),
+    });
   }
 
   fetchUsers = async (query) => {
@@ -42,7 +46,7 @@ export default class Search extends Component {
     });
 
     const knownFollowing = await loadKnownFollowing();
-    const knownFollowers = await loadKnownFollowers();
+    const { knownFollowers } = this.state;
 
     this.props.screenProps.request(`https://api.instagram.com/v1/tags/${query}/media/recent?count=50&access_token=${this.props.screenProps.accessToken}`)
       .then((res) => {
