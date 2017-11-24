@@ -103,7 +103,7 @@ export default class Instagram extends Component {
           });
           return null;
         }
-        
+
         return res.json();
       }).then(result => this.setState({
         isSearching: false,
