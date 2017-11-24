@@ -57,6 +57,11 @@ export const loadKnownFollowing = async () => {
 
 export const fetchUtil = async (url, options) => {
   if (options != null && options.method === 'POST') {
+    if (requestHistory.length === 0) {
+      const storedValue = await AsyncStorage.getItem('instagram:requestCount');
+      requestHistory = storedValue == null ? [] : JSON.parse(storedValue);
+    }
+
     if (postHistory.length === 0) {
       const storedValue = await AsyncStorage.getItem('instagram:postCount');
       postHistory = storedValue == null ? [] : JSON.parse(storedValue);
@@ -68,6 +73,11 @@ export const fetchUtil = async (url, options) => {
     await AsyncStorage.setItem('instagram:postCount', JSON.stringify(postHistory));
     const request = await fetch(url, options);
     return { request, count: postHistory.length };
+  }
+
+  if (postHistory.length === 0) {
+    const storedValue = await AsyncStorage.getItem('instagram:postCount');
+    postHistory = storedValue == null ? [] : JSON.parse(storedValue);
   }
 
   if (requestHistory.length === 0) {

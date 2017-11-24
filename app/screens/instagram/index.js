@@ -43,6 +43,21 @@ export default class Instagram extends Component {
       const me = await this.networkRequest(`https://api.instagram.com/v1/users/self/?access_token=${token}`).then(response => response.json());
       await AsyncStorage.setItem('currentUserId', me.data.id);
     }
+
+    const storedRequestValue = await AsyncStorage.getItem('instagram:requestCount');
+    const storedPostValue = await AsyncStorage.getItem('instagram:postCount');
+
+    if (storedRequestValue != null) {
+      this.setState({
+        currentRequestCount: JSON.parse(storedRequestValue).length,
+      });
+    }
+
+    if (storedPostValue != null) {
+      this.setState({
+        currentPostCount: JSON.parse(storedPostValue).length,
+      });
+    }
   }
 
   networkRequest = async (url, options) => {
