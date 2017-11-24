@@ -10,6 +10,7 @@ const styles = {
     borderRadius: 6,
     paddingHorizontal: 16,
     paddingBottom: 16,
+    marginVertical: 8,
   },
   description: {
     flex: 4,
