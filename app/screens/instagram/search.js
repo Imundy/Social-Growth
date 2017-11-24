@@ -11,7 +11,7 @@ import {
 import UserSearchResult from '../../components/user-search-result';
 import styles from './styles';
 import colors from '../../styles/colors';
-import { loadKnownFollowers, addKnownFollowers } from './util';
+import { loadKnownFollowing, addKnownFollowing, loadKnownFollowers } from './util';
 
 export default class Search extends Component {
   state = {
@@ -33,9 +33,7 @@ export default class Search extends Component {
   }
 
   followUser = async (userId) => {
-    const form = new FormData();
-    form.append('action', 'follow');
-    await this.props.screenProps.request(`https://api.instagram.com/v1/users/${userId}/relationship?access_token=${this.props.screenProps.accessToken}&action=follow`, { method: 'POST', body: form });
+    this.props.screenProps.follow(userId, 'follow');
   }
 
   fetchUsers = async (query) => {
@@ -43,6 +41,7 @@ export default class Search extends Component {
       isSearching: true,
     });
 
+    const knownFollowing = await loadKnownFollowing();
     const knownFollowers = await loadKnownFollowers();
 
     this.props.screenProps.request(`https://api.instagram.com/v1/tags/${query}/media/recent?count=50&access_token=${this.props.screenProps.accessToken}`)
@@ -60,7 +59,7 @@ export default class Search extends Component {
         try {
           let results = await Promise.all(
             ids.map(id =>
-              (knownFollowers.indexOf(id.toString()) === -1 ?
+              (knownFollowing.indexOf(id.toString()) === -1 ?
               this.props.screenProps.request(`https://api.instagram.com/v1/users/${id}/relationship?access_token=${this.props.screenProps.accessToken}`)
                 .then(response => response.json())
                 .then(res => ({
@@ -69,12 +68,12 @@ export default class Search extends Component {
                 })) :
                 ({
                   ...result.data.find(x => x.user.id === id).user,
-                  relationship: { incoming_status: 'followed_by', outgoing_status: 'follows' },
+                  relationship: { incoming_status: knownFollowers.indexOf(id) !== -1 ? 'followed_by' : 'none', outgoing_status: 'follows' },
                 })),
             ));
 
           results = await Promise.all(
-            results.filter(user => user.relationship.outgoing_status !== 'none').map(user =>
+            results.filter(user => user.relationship.outgoing_status === 'none').map(user =>
               this.props.screenProps.request(`https://api.instagram.com/v1/users/${user.id}/?access_token=${this.props.screenProps.accessToken}`)
                 .then(response => response.json())
                 .then(res => ({
@@ -84,7 +83,7 @@ export default class Search extends Component {
             ),
           );
 
-          await addKnownFollowers(results.filter(user => knownFollowers.indexOf(user.id.toString()) === -1 && user.relationship.outgoing_status === 'follows').map(user => user.id));
+          await addKnownFollowing(results.filter(user => knownFollowing.indexOf(user.id.toString()) === -1 && user.relationship.outgoing_status === 'follows').map(user => user.id));
 
           this.setState({
             results,

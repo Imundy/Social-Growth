@@ -15,8 +15,7 @@ export default class Manage extends Component {
 
   onStopDrag = (event, userId) => {
     if (event.target > 100) {
-      console.log(userId);
-      this.props.screenProps.unfollow(userId);
+      this.props.screenProps.unfollow(userId, 'unfollow');
     }
   }
 

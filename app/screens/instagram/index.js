@@ -16,7 +16,7 @@ import Search from './search';
 import Manage from './manage';
 import styles from './styles';
 import config from '../../config';
-import { fetchUtil, loadKnownFollowers, addKnownFollowers } from './util';
+import { fetchUtil, loadKnownFollowers, addKnownFollowers, removeKnownFollowing, addKnownFollowing } from './util';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -162,8 +162,20 @@ export default class Instagram extends Component {
     });
   }
 
-  unfollow = async (userId) => {
-    console.log(userId);
+  updateFollow = async (userId, action) => {
+    const form = new FormData();
+    form.append('action', action);
+    await this.networkRequest(`https://api.instagram.com/v1/users/${userId}/relationship?access_token=${this.state.accessToken}&action=follow`, { method: 'POST', body: form });
+    switch (action) {
+      case 'unfollow':
+        await removeKnownFollowing(userId);
+        break;
+      case 'follow':
+        await addKnownFollowing(userId);
+        break;
+      default:
+        break;
+    }
   }
 
   render() {
@@ -202,7 +214,8 @@ export default class Instagram extends Component {
             request: this.networkRequest,
             following: this.state.following,
             loadFollowers: this.loadFollowers,
-            unfollow: this.unfollow,
+            unfollow: this.updateFollow,
+            follow: this.updateFollow,
           }}
         />
       </View>

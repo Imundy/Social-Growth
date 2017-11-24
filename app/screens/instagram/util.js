@@ -26,6 +26,35 @@ export const loadKnownFollowers = async () => {
   return JSON.parse(knownFollowers);
 };
 
+export const removeKnownFollowing = async (id) => {
+  let KnownFollowing = await AsyncStorage.getItem('instagram:KnownFollowing');
+  if (KnownFollowing == null) {
+    KnownFollowing = '[]';
+  }
+
+  KnownFollowing = JSON.parse(KnownFollowing);
+  await AsyncStorage.setItem('instagram:KnownFollowing', JSON.stringify([...new Set(KnownFollowing.filter(x => x !== id))]));
+};
+
+export const addKnownFollowing = async (ids) => {
+  let KnownFollowing = await AsyncStorage.getItem('instagram:KnownFollowing');
+  if (KnownFollowing == null) {
+    KnownFollowing = '[]';
+  }
+
+  KnownFollowing = JSON.parse(KnownFollowing);
+  await AsyncStorage.setItem('instagram:KnownFollowing', JSON.stringify([...new Set(KnownFollowing.concat(ids))]));
+};
+
+export const loadKnownFollowing = async () => {
+  const KnownFollowing = await AsyncStorage.getItem('instagram:KnownFollowing');
+  if (KnownFollowing == null) {
+    return [];
+  }
+
+  return JSON.parse(KnownFollowing);
+};
+
 export const fetchUtil = async (url, options) => {
   if (options != null && options.method === 'POST') {
     if (postHistory.length === 0) {
