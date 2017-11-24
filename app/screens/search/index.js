@@ -37,14 +37,16 @@ export default class Search extends Component {
 
   render() {
     return (
-      <View>
-        <Header header="TAG SEARCH" headerSize={22} subtext="Search and follow new accounts" search={this.search} searchTextChange={this.searchTextChange} />
+      <View style={{ overflow: 'scroll' }}>
+        <Header title="TAG SEARCH" titleSize={22} subtext="Search and follow new accounts" search={this.search} searchTextChange={this.searchTextChange} />
         {this.state.updateSearch !== '' && <Text>Results for {this.state.updateSearch}</Text>}
-        <FlatList
-          data={this.props.accounts}
-          keyExtractor={this._keyExtractor}
-          renderItem={this.props.renderItem}
-        />
+        <View style={{ maxWidth: 400, width: '100%', padding: 20, height: '70%' }}>
+          <FlatList
+            data={this.props.results}
+            keyExtractor={this._keyExtractor}
+            renderItem={this.props.renderItem}
+          />
+        </View>
       </View>
     );
   }

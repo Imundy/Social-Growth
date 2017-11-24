@@ -24,7 +24,7 @@ export default class UserSearchResult extends PureComponent {
 
   renderFollowing = (user, followUser) => {
     if (user.following) {
-      return (<Text style={styles.following}>Following</Text>);
+      return (<Text style={styles.following}>{this.props.user.followStatus || 'Following'}</Text>);
     }
 
     return (

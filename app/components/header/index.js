@@ -44,7 +44,7 @@ const renderConnect = (account, connect) => (
 
 const renderSearch = (searchTextChange, search) => (
   <View style={styles.searchContainer}>
-    <TextInput style={styles.input} onChangeText={searchTextChange} placeholder="Search" placeholderTextColor="#999" />
+    <TextInput autoCorrect={false} autoCapitalize="none" style={styles.input} onChangeText={searchTextChange} placeholder="Search" placeholderTextColor="#999" onSubmitEditing={search} />
     <TouchableOpacity style={styles.searchButton} onPress={search}>
       <Text style={{ color: 'white' }}>A</Text>
     </TouchableOpacity>
