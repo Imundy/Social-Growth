@@ -32,6 +32,6 @@ const AppNavigator = new StackNavigator(
   },
   {
     headerMode: 'none',
-    initialRouteName: 'Twitter',
+    initialRouteName: 'Home',
   },
 );
