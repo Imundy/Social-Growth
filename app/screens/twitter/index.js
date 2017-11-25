@@ -108,12 +108,14 @@ export default class Twitter extends Component {
 
   search = async () => {
     const response = await this._twitterClient.get('users/search', { q: this.state.searchText });
-    this.setState({ searchResults: response, page: 1 });
+    const hasMoreSearchResults = response.length === 20;
+    this.setState({ searchResults: response, page: 1, hasMoreSearchResults });
   }
 
   loadMoreSearchResults = async () => {
     const response = await this._twitterClient.get('users/search', { q: this.state.searchText, page: this.state.page + 1 });
-    this.setState(state => ({ searchResults: [...state.searchResults, ...response], page: state.page + 1 }));
+    const hasMoreSearchResults = response.length === 20;
+    this.setState(state => ({ searchResults: [...state.searchResults, ...response], hasMoreSearchResults, page: state.page + 1 }));
   }
 
   loadFriends = async () => {
@@ -174,7 +176,7 @@ export default class Twitter extends Component {
   }
 
   getPropsForScreen = () => {
-    const { searchResults, loading, nonFollowers } = this.state;
+    const { searchResults, loading, nonFollowers, hasMoreSearchResults } = this.state;
 
     switch (this.state.view.name) {
       case views.UserSearch.name:
@@ -182,6 +184,7 @@ export default class Twitter extends Component {
           searchResults,
           loadMore: this.loadMoreSearchResults,
           followUser: this.follow,
+          hasMoreSearchResults,
         };
       case views.UnfollowUsers.name:
         return {

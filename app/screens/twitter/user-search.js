@@ -10,7 +10,7 @@ export default class UserSearch extends PureComponent {
   }
 
   render() {
-    const { searchResults, followUser, loadMore } = this.props.screenProps;
+    const { searchResults, followUser, loadMore, hasMoreSearchResults } = this.props.screenProps;
     return (
       <FlatList
         ref={(list) => { this._list = list; }}
@@ -18,7 +18,7 @@ export default class UserSearch extends PureComponent {
         data={searchResults}
         keyExtractor={item => item.id}
         renderItem={({ item }) => renderTwitterResult(item, followUser)}
-        onEndReached={loadMore}
+        onEndReached={hasMoreSearchResults ? loadMore : null}
       />
     );
   }
