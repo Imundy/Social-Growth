@@ -12,6 +12,7 @@ import SvgUri from 'react-native-svg-uri';
 import colors from '../../styles/colors';
 import Card from '../../components/card';
 import Header from '../../components/header';
+import SwitchAccounts from '../../components/switch-accounts';
 import Search from './search';
 import Manage from './manage';
 import styles from './styles';
@@ -23,7 +24,8 @@ const windowWidth = Dimensions.get('window').width;
 export default class Instagram extends Component {
   state = {
     isLoading: false,
-    accessToken: '',
+    accounts: [],
+    currentAccount: {},
     error: null,
     url: 'https://instagram.com/accounts/logout',
     view: views.Home,
@@ -32,20 +34,17 @@ export default class Instagram extends Component {
   }
 
   componentDidMount = async () => {
-    const token = await AsyncStorage.getItem('instagramToken');
+    let currentAccount = await AsyncStorage.getItem('currentInstagramUser');
+    let accounts = await AsyncStorage.getItem('instagramAccounts');
+    accounts = JSON.parse(accounts);
+    currentAccount = JSON.parse(currentAccount);
     this.setState({
-      accessToken: token || '',
+      currentAccount: currentAccount || {},
+      accounts: accounts || [],
     });
 
-
-    const currentUser = await AsyncStorage.getItem('currentUserId');
-    if (currentUser == null && token != null) {
-      const me = await this.networkRequest(`https://api.instagram.com/v1/users/self/?access_token=${token}`).then(response => response.json());
-      await AsyncStorage.setItem('currentUserId', me.data.id);
-    }
-
-    const storedRequestValue = await AsyncStorage.getItem('instagram:requestCount');
-    const storedPostValue = await AsyncStorage.getItem('instagram:postCount');
+    const storedRequestValue = await AsyncStorage.getItem(`instagram:${currentAccount ? currentAccount.id : ''}:requestCount`);
+    const storedPostValue = await AsyncStorage.getItem(`instagram:${currentAccount ? currentAccount.id : ''}:postCount`);
 
     if (storedRequestValue != null) {
       this.setState({
@@ -58,6 +57,25 @@ export default class Instagram extends Component {
         currentPostCount: JSON.parse(storedPostValue).length,
       });
     }
+  }
+
+  addCurrenAccount = async (accessToken) => {
+    const me = await this.networkRequest(`https://api.instagram.com/v1/users/self/?access_token=${accessToken}`).then(response => response.json());
+    const currentAccount = { ...me, accessToken };
+    const accounts = [...this.state.accounts];
+    console.warn(currentAccount);
+    accounts.push(currentAccount);
+    this.setState({ currentAccount, accounts });
+    await AsyncStorage.setItem('currentInstagramAccount', JSON.stringify(currentAccount));
+    await AsyncStorage.setItem('accounts', JSON.stringify(accounts));
+    return currentAccount;
+  }
+
+  selectAccount = (accountId) => {
+    const currentAccount = this.state.accounts.find(x => x.id === accountId);
+    this.setState({ currentAccount });
+    AsyncStorage.setItem('currentInstagramAccount', JSON.stringify(currentAccount));
+    this._navigator._navigation.goBack();
   }
 
   networkRequest = async (url, options) => {
@@ -84,9 +102,9 @@ export default class Instagram extends Component {
   onNavigationStateChange = async (event) => {
     const token = event.url.split('access_token')[1];
     if (token != null) {
-      await AsyncStorage.setItem('instagramToken', token.substring(1));
+      const currentAccount = await this.addCurrenAccount(token);
       this.setState({
-        accessToken: token.substring(1),
+        currentAccount,
         isAuthenticating: false,
       });
       clearTimeout(this.timeout);
@@ -128,7 +146,7 @@ export default class Instagram extends Component {
       return;
     }
 
-    this.networkRequest(`https://api.instagram.com/v1/tags/search?q=${query}&access_token=${this.state.accessToken}`)
+    this.networkRequest(`https://api.instagram.com/v1/tags/search?q=${query}&access_token=${this.state.currentAccount.accessToken}`)
       .then((res) => {
         if (res.status < 200 || res.status >= 300) {
           this.setState({
@@ -155,7 +173,7 @@ export default class Instagram extends Component {
     const followers = await Promise.all(
       users.filter(x => knownIds.indexOf(x.id.toString()) === -1)
         .map(user =>
-          this.networkRequest(`https://api.instagram.com/v1/users/${user.id}/relationship?access_token=${this.state.accessToken}`)
+          this.networkRequest(`https://api.instagram.com/v1/users/${user.id}/relationship?access_token=${this.state.currentAccount.accessToken}`)
             .then(res => res.json())
             .then(result => ({
               ...user,
@@ -170,7 +188,7 @@ export default class Instagram extends Component {
   }
 
   loadFollowers = async () => {
-    const response = await this.networkRequest(`https://api.instagram.com/v1/users/self/follows?count=500&access_token=${this.state.accessToken}`).then(res => res.json());
+    const response = await this.networkRequest(`https://api.instagram.com/v1/users/self/follows?count=500&access_token=${this.state.currentAccount.accessToken}`).then(res => res.json());
     const results = await this.addRelationship(response.data);
     this.setState({
       following: results,
@@ -180,7 +198,7 @@ export default class Instagram extends Component {
   updateFollow = async (userId, action) => {
     const form = new FormData();
     form.append('action', action);
-    await this.networkRequest(`https://api.instagram.com/v1/users/${userId}/relationship?access_token=${this.state.accessToken}&action=follow`, { method: 'POST', body: form });
+    await this.networkRequest(`https://api.instagram.com/v1/users/${userId}/relationship?access_token=${this.state.currentAccount.accessToken}&action=follow`, { method: 'POST', body: form });
     switch (action) {
       case 'unfollow':
         await removeKnownFollowing(userId);
@@ -196,17 +214,58 @@ export default class Instagram extends Component {
     }
   }
 
+  getPropsForScreen = () => {
+    const { results, view } = this.state;
+
+    switch (this.state.view.name) {
+      case views.Search.name:
+      case views.Manage.name:
+        return {
+          name: views[view.name].name,
+          description: views[view.name].description,
+          searchResults: results,
+          loadMore: this.loadMoreSearchResults,
+          followUser: this.follow,
+          isSearchingTags: this.state.isSearching,
+          accessToken: this.state.currentAccount.accessToken,
+          request: this.networkRequest,
+          following: this.state.following,
+          loadFollowers: this.loadFollowers,
+          unfollow: this.updateFollow,
+          follow: this.updateFollow,
+        };
+      case views.SwitchAccounts.name:
+        return {
+          serviceName: 'Instagram',
+          accounts: this.state.accounts.map(account => ({
+            id: account.id,
+            profileImage: account.profile_picture,
+            displayName: account.full_name,
+          })),
+          selectedAccountId: this.state.currentAccount.id,
+          addAccount: this.instagramOAuth,
+          selectAccount: this.selectAccount,
+        };
+      case views.Home.name:
+      default:
+        return {};
+    }
+  }
+
   render() {
-    const { view, results } = this.state;
+    const { view } = this.state;
     return (
       <View style={styles.container}>
         <Header
           title="INSTAGRAM"
           titleSize={36}
           subtext={`${labels.instagram} ${this.state.currentPostCount} ${this.state.currentRequestCount}`}
-          connect={this.state.accessToken === '' ? this.instagramOAuth : null}
+          connect={!this.state.currentAccount.accessToken ? this.instagramOAuth : null}
           search={views[view.name].searchable ? this.search : null}
           searchTextChange={views[view.name].searchable ? this.searchTextChange : null}
+          switchAccounts={() => {
+            this._navigator._navigation.navigate('SwitchAccounts');
+          }}
         />
         {this.state.isAuthenticating && <View style={{ width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.4)', position: 'absolute', justifyContent: 'center' }}>
           <View style={{ width: windowWidth, height: '100%', justifyContent: 'center', alignItems: 'center' }}>
@@ -220,21 +279,9 @@ export default class Instagram extends Component {
           </View>
         </View>}
         <InstagramApp
+          ref={(ref) => { this._navigator = ref; }}
           onNavigationStateChange={this.stackStateChange}
-          screenProps={{
-            name: views[view.name].name,
-            description: views[view.name].description,
-            searchResults: results,
-            loadMore: this.loadMoreSearchResults,
-            followUser: this.follow,
-            isSearchingTags: this.state.isSearching,
-            accessToken: this.state.accessToken,
-            request: this.networkRequest,
-            following: this.state.following,
-            loadFollowers: this.loadFollowers,
-            unfollow: this.updateFollow,
-            follow: this.updateFollow,
-          }}
+          screenProps={this.getPropsForScreen()}
         />
       </View>
     );
@@ -278,6 +325,9 @@ const InstagramApp = new StackNavigator({
   Manage: {
     screen: Manage,
   },
+  SwitchAccounts: {
+    screen: SwitchAccounts,
+  },
 }, {
   headerMode: 'none',
 });
@@ -295,5 +345,9 @@ const views = {
   Manage: {
     name: 'Manage',
     description: 'Manage accounts you follow.',
+  },
+  SwitchAccounts: {
+    name: 'SwitchAccounts',
+    description: 'Select which account to use.',
   },
 };
