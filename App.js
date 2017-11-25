@@ -5,40 +5,33 @@
  */
 
 import React, { Component } from 'react';
-import {
-  Platform,
-  StyleSheet,
-  Text,
-  View
-} from 'react-native';
 
+import { StackNavigator } from 'react-navigation';
+
+import Home from './app/screens/home';
 import Twitter from './app/screens/twitter';
+import Instagram from './app/screens/instagram';
 
 export default class App extends Component<{}> {
   render() {
-    return (
-      <View style={styles.container}>
-        <Twitter />
-      </View>
-    );
+    return (<AppNavigator />);
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+const AppNavigator = new StackNavigator(
+  {
+    Home: {
+      screen: Home,
+    },
+    Twitter: {
+      screen: Twitter,
+    },
+    Instagram: {
+      screen: Instagram,
+    },
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
+  {
+    headerMode: 'none',
+    initialRouteName: 'Home',
   },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
+);
