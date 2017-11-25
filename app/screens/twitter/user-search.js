@@ -10,20 +10,20 @@ export default class UserSearch extends PureComponent {
   }
 
   render() {
-    const { screenProps } = this.props;
+    const { searchResults, followUser, loadMore } = this.props.screenProps;
     return (
       <FlatList
         ref={(list) => { this._list = list; }}
         contentContainerStyle={{ backgroundColor: 'white' }}
-        data={screenProps.searchResults}
+        data={searchResults}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => renderTwitterResult(item, screenProps.followUser)}
-        onEndReached={screenProps.loadMore}
+        renderItem={({ item }) => renderTwitterResult(item, followUser)}
+        onEndReached={loadMore}
       />
     );
   }
 }
-  
+
 const renderTwitterResult = (item, followUser) => (<UserSearchResult user={mapTwitterUser(item)} followUser={followUser} />);
 
 const mapTwitterUser = user => ({

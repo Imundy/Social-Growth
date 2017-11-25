@@ -3,13 +3,15 @@ import { View, Text, FlatList } from 'react-native';
 import UserUnfollowCard from '../../components/user-unfollow-card';
 
 export default class UnfollowUsers extends PureComponent {
-  componentDidMount() {
-    this.props.screenProps.loadUnfollowers();
+  componentWillReceiveProps(nextProps) {
+    if (!this.props.screenProps.loadUnfollowers && nextProps.screenProps.loadUnfollowers) {
+      nextProps.screenProps.loadUnfollowers();
+    }
   }
 
   render() {
-    const { screenProps } = this.props;
-    if (screenProps.loading) {
+    const { loading, nonFollowers, unfollowUser } = this.props.screenProps;
+    if (loading) {
       return (
         <View>
           <Text> Loading... </Text>
@@ -21,9 +23,9 @@ export default class UnfollowUsers extends PureComponent {
       <FlatList
         ref={(list) => { this._list = list; }}
         contentContainerStyle={{ backgroundColor: 'white' }}
-        data={screenProps.nonFollowers}
+        data={nonFollowers}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => renderTwitterResult(item, screenProps.unfollowUser)}
+        renderItem={({ item }) => renderTwitterResult(item, unfollowUser)}
       />
     );
   }

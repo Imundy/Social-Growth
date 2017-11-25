@@ -11,12 +11,13 @@ import {
 import styles from './styles.js';
 import colors from '../../styles/colors.js';
 
-const Header = ({ title, titleSize, subtext, search, searchTextChange, connect, account }) => (
+const Header = ({ title, titleSize, subtext, search, searchTextChange, connect, account, switchAccounts }) => (
   <View style={styles.headerContainer}>
     <Text style={{ fontWeight: '300', color: colors.lightBlue, fontSize: titleSize }}>{title}</Text>
     <Text style={{ fontWeight: '300', color: 'white', fontSize: 16, textAlign: 'center' }}>{subtext}</Text>
     {searchTextChange != null && search != null && renderSearch(searchTextChange, search)}
-    {connect != null && renderConnect(account, connect)}
+    {connect && !account ? renderConnect(connect) : null}
+    {account ? renderSwitchAccounts(account, switchAccounts) : null }
   </View>
 );
 
@@ -27,18 +28,26 @@ Header.propTypes = {
   search: PropTypes.func,
   searchTextChange: PropTypes.func,
   connect: PropTypes.func,
+  switchAccounts: PropTypes.func.isRequired,
   account: PropTypes.shape({
     name: PropTypes.string,
   }),
 };
 
-const renderConnect = (account, connect) => (
+const renderConnect = connect => (
   <View style={styles.buttonContainer}>
-    { account ?
-      <Text style={styles.account}>{account.name}</Text> :
-      <TouchableOpacity style={styles.connectButton} onPress={connect}>
-        <Text style={{ color: 'white', fontWeight: 'bold' }}>Connect</Text>
-      </TouchableOpacity> }
+    <TouchableOpacity style={styles.connectButton} onPress={connect}>
+      <Text style={{ color: 'white', fontWeight: 'bold' }}>Connect</Text>
+    </TouchableOpacity>
+  </View>
+);
+
+const renderSwitchAccounts = (account, switchAccounts) => (
+  <View style={styles.switchContainer}>
+    <TouchableOpacity style={styles.switchButton} onPress={switchAccounts}>
+      <Text style={{ color: 'white', fontWeight: 'bold', textDecorationLine: 'underline' }}>Switch Account</Text>
+    </TouchableOpacity>
+    <Text style={styles.account}>{account.name}</Text>
   </View>
 );
 

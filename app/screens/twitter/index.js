@@ -6,6 +6,7 @@ import SvgUri from 'react-native-svg-uri';
 
 import Header from '../../components/header';
 import Card from '../../components/card';
+import SwitchAccounts from '../../components/switch-accounts';
 import UserSearch from './user-search';
 import UnfollowUsers from './unfollow-users';
 import config from '../../config';
@@ -15,19 +16,27 @@ import styles from './styles';
 export default class Twitter extends Component {
   state = {
     connected: false,
-    twitterTokens: null,
+    twitterAccounts: [],
+    currentAccount: null,
     view: views.Home,
   }
 
   async componentDidMount() {
-    const twitterTokens = await AsyncStorage.getItem('twitterTokens');
-    if (twitterTokens) {
-      this.setState({ connected: true, twitterTokens: JSON.parse(twitterTokens) }, this.createTwitterClient); // eslint-disable-line
+    let twitterAccounts = await AsyncStorage.getItem('twitterAccounts');
+    if (twitterAccounts) {
+      const currentAccount = await AsyncStorage.getItem('currentTwitterAccount');
+      twitterAccounts = JSON.parse(twitterAccounts);
+      this.setState({ connected: true, twitterAccounts, currentAccount: currentAccount ? JSON.parse(currentAccount) : twitterAccounts[0] }, this.createTwitterClient); // eslint-disable-line
     }
+    this.props.navigation.navigate('SwitchAccounts');
   }
 
-  createTwitterClient = () => {
-    const { accessToken, accessTokenSecret } = this.state.twitterTokens;
+  createTwitterClient = async () => {
+    if (!this.state.currentAccount) {
+      return;
+    }
+
+    const { accessToken, accessTokenSecret } = this.state.currentAccount;
     const clients = twitter({
       consumerKey: config.twitterConsumerToken,
       consumerSecret: config.twitterConsumerSecret,
@@ -35,6 +44,25 @@ export default class Twitter extends Component {
       accessTokenSecret,
     });
     this._twitterClient = clients.rest;
+    if (!this.state.currentAccount.screen_name) {
+      this.getCurrentAccountInfo();
+    }
+  }
+
+  getCurrentAccountInfo = async () => {
+    const currentAccountInfo = await this._twitterClient.get('users/lookup', { user_id: this.state.currentAccount.id, stringify_ids: true });
+    const currentAccount = { ...currentAccountInfo[0], ...this.state.currentAccount };
+    const currentAccountIndex = this.state.twitterAccounts.findIndex(x => x.id === currentAccount.id);
+    const twitterAccounts = [...this.state.twitterAccounts];
+    twitterAccounts[currentAccountIndex] = currentAccount;
+    this.setState({ twitterAccounts, currentAccount });
+    await this.storeAccounts(twitterAccounts, currentAccount);
+  }
+
+  storeAccounts = async (twitterAccounts, currentAccount) => {
+    const accountsPromise = AsyncStorage.setItem('twitterAccounts', JSON.stringify(twitterAccounts));
+    const currentAccountPromise = AsyncStorage.setItem('currentTwitterAccount', JSON.stringify(currentAccount));
+    return Promise.all(accountsPromise, currentAccountPromise);
   }
 
   signIn = async () => {
@@ -43,12 +71,23 @@ export default class Twitter extends Component {
                 { consumerKey: config.twitterConsumerToken, consumerSecret: config.twitterConsumerSecret },
                 'socialauth://twitter',
             );
-
-      AsyncStorage.setItem('twitterTokens', JSON.stringify(twitterResponse));
-      this.setState({ connected: true, twitterTokens: twitterResponse }, this.createTwitterClient);
+      const twitterAccounts = [...this.state.twitterAccounts];
+      twitterAccounts.push(twitterResponse);
+      await this.storeAccounts(twitterAccounts, twitterResponse);
+      this.setState({ connected: true, twitterAccounts, currentAccount: twitterResponse }, this.createTwitterClient);
+      if (this.state.view === views.SwitchAccounts.name) {
+        this.props.navigation.navigate('Home');
+      }
     } catch (error) {
       console.warn(error);
     }
+  }
+
+  selectAccount = (accountId) => {
+    const currentAccount = this.state.twitterAccounts.find(x => x.id === accountId);
+    this.setState({ currentAccount }, this.createTwitterClient);
+    AsyncStorage.setItem('currentTwitterAccount', JSON.stringify(currentAccount));
+    this._navigator._navigation.navigate('Home');
   }
 
   follow = async (id) => {
@@ -99,13 +138,13 @@ export default class Twitter extends Component {
 
   getNonFollowingUsers = async () => {
     this.setState({ loading: true });
-    let friendIds = await AsyncStorage.getItem('twitter friends');
-    let followerIds = await AsyncStorage.getItem('twitter followers');
+    let friendIds; // = await AsyncStorage.getItem('twitter friends');
+    let followerIds; // = await AsyncStorage.getItem('twitter followers');
     if (!friendIds || !followerIds) {
       friendIds = await this.loadFriends();
       followerIds = await this.loadFollowers();
-      await AsyncStorage.setItem('twitter friends', JSON.stringify(friendIds));
-      await AsyncStorage.setItem('twitter followers', JSON.stringify(followerIds));
+      // await AsyncStorage.setItem('twitter friends', JSON.stringify(friendIds));
+      // await AsyncStorage.setItem('twitter followers', JSON.stringify(followerIds));
     } else {
       friendIds = JSON.parse(friendIds);
       followerIds = JSON.parse(followerIds);
@@ -128,13 +167,50 @@ export default class Twitter extends Component {
   }
 
   navigationStateChange = (prevState, currentState) => {
+    this.view = views[currentState.routes[currentState.index].routeName];
     this.setState({
       view: views[currentState.routes[currentState.index].routeName],
     });
   }
 
+  getPropsForScreen = () => {
+    const { searchResults, loading, nonFollowers } = this.state;
+
+    switch (this.state.view.name) {
+      case views.UserSearch.name:
+        return {
+          searchResults,
+          loadMore: this.loadMoreSearchResults,
+          followUser: this.follow,
+        };
+      case views.UnfollowUsers.name:
+        return {
+          unfollowUser: this.unfollow,
+          loading,
+          nonFollowers,
+          loadUnfollowers: this.getNonFollowingUsers,
+        };
+      case views.SwitchAccounts.name:
+        return {
+          serviceName: 'Twitter',
+          accounts: this.state.twitterAccounts.map(account => ({
+            id: account.id,
+            profileImage: account.profile_image_url_https,
+            displayName: account.name,
+          })),
+          selectedAccountId: this.state.currentAccount.id,
+          addAccount: this.signIn,
+          selectAccount: this.selectAccount,
+        };
+      case views.Home.name:
+      default:
+        return {};
+    }
+  }
+
   render() {
-    const { twitterTokens, view, searchResults, loading, nonFollowers } = this.state;
+    const { currentAccount, view } = this.state;
+    const screenProps = this.getPropsForScreen();
 
     return (
       <View style={styles.container}>
@@ -145,21 +221,15 @@ export default class Twitter extends Component {
           connect={view.name === views.Home.name ? this.signIn : null}
           search={views[view.name].searchable ? this.search : null}
           searchTextChange={views[view.name].searchable ? this.searchTextChange : null}
-          account={twitterTokens ? { name: `@${twitterTokens.name}` } : null}
+          account={currentAccount ? { name: `@${currentAccount.name}` } : null}
+          switchAccounts={() => {
+            this._navigator._navigation.navigate('SwitchAccounts');
+          }}
         />
         <TwitterApp
+          ref={(ref) => { this._navigator = ref; }}
           onNavigationStateChange={this.navigationStateChange}
-          screenProps={{
-            name: views[view.name].name,
-            description: views[view.name].description,
-            searchResults,
-            loadMore: this.loadMoreSearchResults,
-            followUser: this.follow,
-            unfollowUser: this.unfollow,
-            loading,
-            nonFollowers,
-            loadUnfollowers: this.getNonFollowingUsers,
-          }}
+          screenProps={screenProps}
         />
       </View>
     );
@@ -199,6 +269,9 @@ const TwitterApp = new StackNavigator({
   UnfollowUsers: {
     screen: UnfollowUsers,
   },
+  SwitchAccounts: {
+    screen: SwitchAccounts,
+  },
 }, {
   headerMode: 'none',
 });
@@ -216,5 +289,9 @@ const views = {
   UnfollowUsers: {
     name: 'UnfollowUsers',
     description: 'Unfollow accounts who don\'t follow you back.',
+  },
+  SwitchAccounts: {
+    name: 'SwitchAccounts',
+    description: 'Select which account to use.',
   },
 };

@@ -24,10 +24,22 @@ const styles = {
     marginRight: 20,
   },
   buttonContainer: {
-    width: '100%',
+    alignSelf: 'stretch',
     alignItems: 'flex-end',
     marginHorizontal: 20,
     marginTop: 20,
+  },
+  switchContainer: {
+    alignSelf: 'stretch',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  switchButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 150,
   },
   searchContainer: {
     justifyContent: 'center',
