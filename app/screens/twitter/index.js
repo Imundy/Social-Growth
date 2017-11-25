@@ -76,7 +76,7 @@ export default class Twitter extends Component {
       await this.storeAccounts(twitterAccounts, twitterResponse);
       this.setState({ connected: true, twitterAccounts, currentAccount: twitterResponse }, this.createTwitterClient);
       if (this.state.view === views.SwitchAccounts.name) {
-        this.props.navigation.navigate('Home');
+        this.props.navigation.goBack();
       }
     } catch (error) {
       console.warn(error);
@@ -87,7 +87,7 @@ export default class Twitter extends Component {
     const currentAccount = this.state.twitterAccounts.find(x => x.id === accountId);
     this.setState({ currentAccount }, this.createTwitterClient);
     AsyncStorage.setItem('currentTwitterAccount', JSON.stringify(currentAccount));
-    this._navigator._navigation.navigate('Home');
+    this._navigator._navigation.goBack();
   }
 
   follow = async (id) => {
