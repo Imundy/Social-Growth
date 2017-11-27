@@ -68,7 +68,7 @@ export const fetchUtil = async (url, options) => {
     }
 
     postHistory.push(new Date().getTime());
-    postHistory.filter(x => x < new Date().getTime() - 60000);
+    postHistory = postHistory.filter(x => parseInt(x, 10) > new Date().getTime() - 600000);
 
     await AsyncStorage.setItem('instagram:postCount', JSON.stringify(postHistory));
     const request = await fetch(url, options);
@@ -86,7 +86,7 @@ export const fetchUtil = async (url, options) => {
   }
 
   requestHistory.push(new Date().getTime());
-  requestHistory.filter(x => x < new Date().getTime() - 60000);
+  requestHistory = requestHistory.filter(x => parseInt(x, 10) > new Date().getTime() - 600000);
 
   await AsyncStorage.setItem('instagram:requestCount', JSON.stringify(requestHistory));
   const request = await fetch(url, options);

@@ -33,10 +33,10 @@ export default class Search extends Component {
     }
   }
 
-  followUser = async (userId) => {
-    this.props.screenProps.follow(userId, 'follow');
+  followUser = async (user) => {
+    this.props.screenProps.follow(user, 'follow');
     this.setState({
-      results: this.state.results.filter(x => x.id !== userId),
+      results: this.state.results.filter(x => x.id !== user.id),
     });
   }
 
@@ -108,7 +108,7 @@ export default class Search extends Component {
   )
 
   renderUserResult = item => (
-    <UserSearchResult user={{ ...item, followStatus: followerStatuses[item.relationship.outgoing_status], following: item.relationship.outgoing_status !== 'none', displayName: item.full_name, profileImage: item.profile_picture, followerCount: item.counts.followed_by }} followUser={() => this.followUser(item.id)} />
+    <UserSearchResult user={{ ...item, followStatus: followerStatuses[item.relationship.outgoing_status], following: item.relationship.outgoing_status !== 'none', displayName: item.full_name, profileImage: item.profile_picture, followerCount: item.counts.followed_by }} followUser={() => this.followUser(item)} />
   )
 
   render() {

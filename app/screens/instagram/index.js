@@ -34,7 +34,7 @@ export default class Instagram extends Component {
   }
 
   componentDidMount = async () => {
-    let currentAccount = await AsyncStorage.getItem('currentInstagramUser');
+    let currentAccount = await AsyncStorage.getItem('currentInstagramAccount');
     let accounts = await AsyncStorage.getItem('instagramAccounts');
     accounts = JSON.parse(accounts);
     currentAccount = JSON.parse(currentAccount);
@@ -63,7 +63,6 @@ export default class Instagram extends Component {
     const me = await this.networkRequest(`https://api.instagram.com/v1/users/self/?access_token=${accessToken}`).then(response => response.json());
     const currentAccount = { ...me, accessToken };
     const accounts = [...this.state.accounts];
-    console.warn(currentAccount);
     accounts.push(currentAccount);
     this.setState({ currentAccount, accounts });
     await AsyncStorage.setItem('currentInstagramAccount', JSON.stringify(currentAccount));
@@ -102,11 +101,15 @@ export default class Instagram extends Component {
   onNavigationStateChange = async (event) => {
     const token = event.url.split('access_token')[1];
     if (token != null) {
-      const currentAccount = await this.addCurrenAccount(token);
+      const currentAccount = await this.addCurrenAccount(token.substring(1));
       this.setState({
         currentAccount,
         isAuthenticating: false,
       });
+      clearTimeout(this.timeout);
+    }
+
+    if (event.url.indexOf('https://www.instagram.com/accounts/login/') === 0) {
       clearTimeout(this.timeout);
     }
 
@@ -195,22 +198,37 @@ export default class Instagram extends Component {
     });
   }
 
-  updateFollow = async (userId, action) => {
+  updateFollow = async (user, action) => {
     const form = new FormData();
     form.append('action', action);
-    await this.networkRequest(`https://api.instagram.com/v1/users/${userId}/relationship?access_token=${this.state.currentAccount.accessToken}&action=follow`, { method: 'POST', body: form });
+    const following = this.state.following || [];
     switch (action) {
       case 'unfollow':
-        await removeKnownFollowing(userId);
         this.setState({
-          following: this.state.following.filter(user => user.id !== userId),
+          following: following.filter(u => u.id !== user.id),
         });
+        await removeKnownFollowing(user.id);
+        await this.followRequest(user.id, form, following);
         break;
       case 'follow':
-        await addKnownFollowing(userId);
+        this.setState({
+          following: following.concat(user),
+        });
+        await addKnownFollowing(user.id);
+        this.followRequest(user.id, form, following);
         break;
       default:
         break;
+    }
+  }
+
+  followRequest = async (userId, form, following) => {
+    try {
+      await this.networkRequest(`https://api.instagram.com/v1/users/${userId}/relationship?access_token=${this.state.currentAccount.accessToken}&action=follow`, { method: 'POST', body: form });
+    } catch (e) {
+      this.setState({
+        following,
+      });
     }
   }
 
@@ -237,7 +255,7 @@ export default class Instagram extends Component {
       case views.SwitchAccounts.name:
         return {
           serviceName: 'Instagram',
-          accounts: this.state.accounts.map(account => ({
+          accounts: this.state.accounts == null ? [] : this.state.accounts.map(account => ({
             id: account.id,
             profileImage: account.profile_picture,
             displayName: account.full_name,
@@ -254,6 +272,8 @@ export default class Instagram extends Component {
 
   render() {
     const { view } = this.state;
+    const screenProps = this.getPropsForScreen();
+
     return (
       <View style={styles.container}>
         <Header
@@ -263,11 +283,12 @@ export default class Instagram extends Component {
           connect={!this.state.currentAccount.accessToken ? this.instagramOAuth : null}
           search={views[view.name].searchable ? this.search : null}
           searchTextChange={views[view.name].searchable ? this.searchTextChange : null}
+          account={this.state.currentAccount}
           switchAccounts={() => {
             this._navigator._navigation.navigate('SwitchAccounts');
           }}
         />
-        {this.state.isAuthenticating && <View style={{ width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.4)', position: 'absolute', justifyContent: 'center' }}>
+        {this.state.isAuthenticating && <View style={{ top: 0, left: 0, zIndex: 2, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.4)', position: 'absolute', justifyContent: 'center' }}>
           <View style={{ width: windowWidth, height: '100%', justifyContent: 'center', alignItems: 'center' }}>
             <WebView
               style={{ width: windowWidth, height: '100%' }}
@@ -281,7 +302,7 @@ export default class Instagram extends Component {
         <InstagramApp
           ref={(ref) => { this._navigator = ref; }}
           onNavigationStateChange={this.stackStateChange}
-          screenProps={this.getPropsForScreen()}
+          screenProps={screenProps}
         />
       </View>
     );

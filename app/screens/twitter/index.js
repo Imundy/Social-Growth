@@ -99,7 +99,11 @@ export default class Twitter extends Component {
   }
 
   unfollow = async (id) => {
-    await this._twitterClient.post('friendships/destroy', { user_id: id });
+    try {
+      await this._twitterClient.post('friendships/destroy', { user_id: id });
+    } catch (e) {
+      console.log(e);
+    }
     const { nonFollowers } = this.state;
     const index = nonFollowers.findIndex(x => x.id === id);
     nonFollowers[index].following = false;
