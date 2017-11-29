@@ -1,18 +1,34 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
 import {
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-
+import SvgUri from 'react-native-svg-uri';
+import * as Animatable from 'react-native-animatable';
 import styles from './styles.js';
 import colors from '../../styles/colors.js';
 
-const Header = ({ title, titleSize, subtext, search, searchTextChange, connect, account, switchAccounts }) => (
+Animatable.initializeRegistryWithDefinitions({
+  myFancyAnimation: {
+    from: {
+      translateY: -20,
+    },
+    to: {
+      translateY: 0,
+    },
+  },
+});
+
+const Header = ({ title, titleSize, subtext, search, searchTextChange, connect, account, switchAccounts, navigate, showMenu }) => (
   <View style={styles.headerContainer}>
+    <TouchableOpacity style={{ width: 40, height: 40, position: 'absolute', top: 40, left: 20 }} onPress={navigate} >
+      {!showMenu ?
+        <SvgUri width="40" height="40" source={require('../../icons/svg/ic_menu_black_24px.svg')} /> :
+        <SvgUri width="40" height="40" source={require('../../icons/svg/white-arrow-left.svg')} />}
+    </TouchableOpacity>
     <Text style={{ fontWeight: '300', color: colors.lightBlue, fontSize: titleSize }}>{title}</Text>
     <Text style={{ fontWeight: '300', color: 'white', fontSize: 16, textAlign: 'center' }}>{subtext}</Text>
     {searchTextChange != null && search != null && renderSearch(searchTextChange, search)}
@@ -47,17 +63,17 @@ const renderSwitchAccounts = (account, switchAccounts) => (
     <TouchableOpacity style={styles.switchButton} onPress={switchAccounts}>
       <Text style={{ color: 'white', fontWeight: 'bold', textDecorationLine: 'underline' }}>Switch Account</Text>
     </TouchableOpacity>
-    <Text style={styles.account}>{account.name}</Text>
+    <Text style={styles.account}>{account.name || account.username}</Text>
   </View>
-);
+  );
 
 const renderSearch = (searchTextChange, search) => (
-  <View style={styles.searchContainer}>
+  <Animatable.View style={styles.searchContainer} animation="myFancyAnimation" duration={200}>
     <TextInput autoCorrect={false} autoCapitalize="none" style={styles.input} onChangeText={searchTextChange} placeholder="Search" placeholderTextColor="#999" onSubmitEditing={search} />
     <TouchableOpacity style={styles.searchButton} onPress={search}>
-      <Text style={{ color: 'white' }}>A</Text>
+      <SvgUri width="25" height="25" source={require('../../icons/svg/white-search-icon.svg')} />
     </TouchableOpacity>
-  </View>
+  </Animatable.View>
 );
 
 export default Header;

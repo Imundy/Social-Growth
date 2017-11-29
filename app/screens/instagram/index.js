@@ -5,6 +5,7 @@ import {
   ScrollView,
   View,
   WebView,
+  Text,
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import SvgUri from 'react-native-svg-uri';
@@ -25,7 +26,7 @@ export default class Instagram extends Component {
   state = {
     isLoading: false,
     accounts: [],
-    currentAccount: {},
+    currentAccount: null,
     error: null,
     url: 'https://instagram.com/accounts/logout',
     view: views.Home,
@@ -36,10 +37,12 @@ export default class Instagram extends Component {
   componentDidMount = async () => {
     let currentAccount = await AsyncStorage.getItem('currentInstagramAccount');
     let accounts = await AsyncStorage.getItem('instagramAccounts');
+
     accounts = JSON.parse(accounts);
     currentAccount = JSON.parse(currentAccount);
+
     this.setState({
-      currentAccount: currentAccount || {},
+      currentAccount: currentAccount || null,
       accounts: accounts || [],
     });
 
@@ -64,14 +67,15 @@ export default class Instagram extends Component {
     const currentAccount = { ...me, accessToken };
     const accounts = [...this.state.accounts];
     accounts.push(currentAccount);
+
     this.setState({ currentAccount, accounts });
     await AsyncStorage.setItem('currentInstagramAccount', JSON.stringify(currentAccount));
-    await AsyncStorage.setItem('accounts', JSON.stringify(accounts));
+    await AsyncStorage.setItem('instagramAccounts', JSON.stringify(accounts));
     return currentAccount;
   }
 
   selectAccount = (accountId) => {
-    const currentAccount = this.state.accounts.find(x => x.id === accountId);
+    const currentAccount = this.state.accounts.find(x => x.data.id === accountId);
     this.setState({ currentAccount });
     AsyncStorage.setItem('currentInstagramAccount', JSON.stringify(currentAccount));
     this._navigator._navigation.goBack();
@@ -208,14 +212,14 @@ export default class Instagram extends Component {
           following: following.filter(u => u.id !== user.id),
         });
         await removeKnownFollowing(user.id);
-        await this.followRequest(user.id, form, following);
+        // await this.followRequest(user.id, form, following);
         break;
       case 'follow':
         this.setState({
           following: following.concat(user),
         });
         await addKnownFollowing(user.id);
-        this.followRequest(user.id, form, following);
+        // this.followRequest(user.id, form, following);
         break;
       default:
         break;
@@ -256,11 +260,11 @@ export default class Instagram extends Component {
         return {
           serviceName: 'Instagram',
           accounts: this.state.accounts == null ? [] : this.state.accounts.map(account => ({
-            id: account.id,
-            profileImage: account.profile_picture,
-            displayName: account.full_name,
+            id: account.data.id,
+            profileImage: account.data.profile_picture,
+            displayName: account.data.full_name,
           })),
-          selectedAccountId: this.state.currentAccount.id,
+          selectedAccountId: this.state.currentAccount && this.state.currentAccount.id,
           addAccount: this.instagramOAuth,
           selectAccount: this.selectAccount,
         };
@@ -280,13 +284,15 @@ export default class Instagram extends Component {
           title="INSTAGRAM"
           titleSize={36}
           subtext={`${labels.instagram} ${this.state.currentPostCount} ${this.state.currentRequestCount}`}
-          connect={!this.state.currentAccount.accessToken ? this.instagramOAuth : null}
+          connect={!this.state.currentAccount ? this.instagramOAuth : null}
           search={views[view.name].searchable ? this.search : null}
           searchTextChange={views[view.name].searchable ? this.searchTextChange : null}
-          account={this.state.currentAccount}
+          account={this.state.currentAccount && this.state.currentAccount.data}
           switchAccounts={() => {
             this._navigator._navigation.navigate('SwitchAccounts');
           }}
+          navigate={view.name === 'Search' || view.name === 'Manage' || view.name === 'SwitchAccounts' ? () => this._navigator._navigation.goBack() : () => this.props.navigation.navigate('DrawerOpen')}
+          showMenu={view.name === 'Search' || view.name === 'Manage' || view.name === 'SwitchAccounts'}
         />
         {this.state.isAuthenticating && <View style={{ top: 0, left: 0, zIndex: 2, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.4)', position: 'absolute', justifyContent: 'center' }}>
           <View style={{ width: windowWidth, height: '100%', justifyContent: 'center', alignItems: 'center' }}>
@@ -323,7 +329,7 @@ const Cards = ({ navigation }) => (
       <Card
         description={views.Manage.description}
         title="MANAGE AUDIENCE"
-        color={colors.blueGreen}
+        color={colors.blue}
         logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/instagram-logo.svg')} />)}
         toggle={() => {}}
         onPress={() => { navigation.navigate('Manage'); }}

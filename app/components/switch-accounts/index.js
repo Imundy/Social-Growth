@@ -11,16 +11,15 @@ export default class SwitchAccounts extends PureComponent { // eslint-disable-li
         id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
         profileImage: PropTypes.string.isRequired,
         displayName: PropTypes.string.isRequired,
-      })).isRequired,
-      selectedAccountId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      selectAccount: PropTypes.func.isRequired,
-      addAccount: PropTypes.func.isRequired,
+      })),
+      selectedAccountId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      selectAccount: PropTypes.func,
+      addAccount: PropTypes.func,
     }),
   }
 
   render() {
     const { accounts, selectedAccountId, selectAccount, addAccount, serviceName } = this.props.screenProps;
-
     return (
       <View style={styles.container}>
         <Text style={styles.selectText}>{`Select ${serviceName} account:`}</Text>
@@ -36,6 +35,6 @@ export default class SwitchAccounts extends PureComponent { // eslint-disable-li
 const Account = ({ account, selectAccount, selectedAccountId }) => (
   <TouchableOpacity style={styles.account} onPress={() => { selectAccount(account.id); }}>
     <Image style={styles.profileImage} source={{ uri: account.profileImage }} />
-    <Text style={[styles.accountName, account.id === selectedAccountId ? styles.accountNameSelected : null]}>{account.displayName}</Text>
+    <Text style={[styles.accountName, account.id === selectedAccountId ? styles.accountNameSelected : null]}>{account.displayName || account.username}</Text>
   </TouchableOpacity>
 );

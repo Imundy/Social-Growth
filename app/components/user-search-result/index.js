@@ -38,6 +38,7 @@ export default class UserSearchResult extends PureComponent {
 
   render() {
     const { user, followUser } = this.props;
+
     return (
       <View style={styles.cardContainer}>
         <Image

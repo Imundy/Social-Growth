@@ -14,6 +14,13 @@ import colors from '../../styles/colors';
 import styles from './styles';
 
 export default class Twitter extends Component {
+  static navigationOptions = {
+    drawerLabel: 'Twitter',
+    drawerIcon: () => (
+      <SvgUri width="25" height="25" source={require('../../icons/svg/blue-twitter-icon.svg')} />
+    ),
+  };
+
   state = {
     connected: false,
     twitterAccounts: [],
@@ -232,6 +239,8 @@ export default class Twitter extends Component {
           switchAccounts={() => {
             this._navigator._navigation.navigate('SwitchAccounts');
           }}
+          navigate={view.name === 'UserSearch' || view.name === 'UnfollowUsers' || view.name === 'SwitchAccounts' ? () => this._navigator._navigation.goBack() : () => this.props.navigation.navigate('DrawerOpen')}
+          showMenu={view.name === 'UserSearch' || view.name === 'UnfollowUsers' || view.name === 'SwitchAccounts'}
         />
         <TwitterApp
           ref={(ref) => { this._navigator = ref; }}
