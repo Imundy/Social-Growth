@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import PropTypes from 'prop-types';
+import * as Animatable from 'react-native-animatable';
 
 import styles from './styles';
 
-const Card = ({ description, title, onPress, logo, canToggle, toggle, on, color }) => (
+const Card = ({ description, title, onPress, logo, canToggle, toggle, on, color, index }) => (
   <TouchableOpacity onPress={onPress}>
-    <View style={{ ...styles.cardContainer, backgroundColor: color }}>
+    <Animatable.View animation="fadeInUp" duration={400} delay={(index * 100) + 100} style={{ ...styles.cardContainer, backgroundColor: color }}>
       <View style={styles.cardHeader}>
         <View style={{ marginTop: -20 }}>
           {canToggle ? <View style={styles.toggleContainer}>
@@ -24,7 +25,7 @@ const Card = ({ description, title, onPress, logo, canToggle, toggle, on, color 
       </View>
       <Text style={styles.description}>{description}</Text>
       <Text style={styles.title}>{title}</Text>
-    </View>
+    </Animatable.View>
   </TouchableOpacity>
 );
 

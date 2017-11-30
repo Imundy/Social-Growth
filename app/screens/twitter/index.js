@@ -181,6 +181,12 @@ export default class Twitter extends Component {
 
   navigationStateChange = (prevState, currentState) => {
     this.view = views[currentState.routes[currentState.index].routeName];
+    if (views[currentState.routes[currentState.index].routeName].name === 'UnfollowUsers') {
+      this.header.transitionHeader(-20);
+    } else if (this.state.view.name === 'UnfollowUsers' && views[currentState.routes[currentState.index].routeName].name !== 'UnfollowUsers') {
+      this.header.transitionHeader(20);
+    }
+
     this.setState({
       view: views[currentState.routes[currentState.index].routeName],
     });
@@ -241,6 +247,7 @@ export default class Twitter extends Component {
           }}
           navigate={view.name === 'UserSearch' || view.name === 'UnfollowUsers' || view.name === 'SwitchAccounts' ? () => this._navigator._navigation.goBack() : () => this.props.navigation.navigate('DrawerOpen')}
           showMenu={view.name === 'UserSearch' || view.name === 'UnfollowUsers' || view.name === 'SwitchAccounts'}
+          ref={(ref) => { this.header = ref; }}
         />
         <TwitterApp
           ref={(ref) => { this._navigator = ref; }}
@@ -262,6 +269,7 @@ const Cards = ({ navigation }) => (
         logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-twitter-icon.svg')} />)}
         toggle={() => {}}
         onPress={() => { navigation.navigate('UserSearch'); }}
+        index={0}
       />
       <Card
         description={views.UnfollowUsers.description}
@@ -270,6 +278,7 @@ const Cards = ({ navigation }) => (
         logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-twitter-icon.svg')} />)}
         toggle={() => {}}
         onPress={() => { navigation.navigate('UnfollowUsers'); }}
+        index={1}
       />
     </View>
   </ScrollView>

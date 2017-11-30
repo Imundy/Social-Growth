@@ -128,6 +128,13 @@ export default class Instagram extends Component {
   }
 
   stackStateChange = (prevState, currentState) => {
+    this.view = views[currentState.routes[currentState.index].routeName];
+    if (views[currentState.routes[currentState.index].routeName].name === 'Manage') {
+      this.header.transitionHeader(-20);
+    } else if (this.state.view.name === 'Manage' && views[currentState.routes[currentState.index].routeName].name !== 'Manage') {
+      this.header.transitionHeader(20);
+    }
+
     this.setState({
       view: views[currentState.routes[currentState.index].routeName],
     });
@@ -283,7 +290,7 @@ export default class Instagram extends Component {
         <Header
           title="INSTAGRAM"
           titleSize={36}
-          subtext={`${labels.instagram} ${this.state.currentPostCount} ${this.state.currentRequestCount}`}
+          subtext={`${views[view.name].description} ${this.state.currentPostCount} ${this.state.currentRequestCount}`}
           connect={!this.state.currentAccount ? this.instagramOAuth : null}
           search={views[view.name].searchable ? this.search : null}
           searchTextChange={views[view.name].searchable ? this.searchTextChange : null}
@@ -293,6 +300,7 @@ export default class Instagram extends Component {
           }}
           navigate={view.name === 'Search' || view.name === 'Manage' || view.name === 'SwitchAccounts' ? () => this._navigator._navigation.goBack() : () => this.props.navigation.navigate('DrawerOpen')}
           showMenu={view.name === 'Search' || view.name === 'Manage' || view.name === 'SwitchAccounts'}
+          ref={(ref) => { this.header = ref; }}
         />
         {this.state.isAuthenticating && <View style={{ top: 0, left: 0, zIndex: 2, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.4)', position: 'absolute', justifyContent: 'center' }}>
           <View style={{ width: windowWidth, height: '100%', justifyContent: 'center', alignItems: 'center' }}>
@@ -325,6 +333,7 @@ const Cards = ({ navigation }) => (
         logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/instagram-logo.svg')} />)}
         toggle={() => {}}
         onPress={() => { navigation.navigate('Search'); }}
+        index={0}
       />
       <Card
         description={views.Manage.description}
@@ -333,6 +342,7 @@ const Cards = ({ navigation }) => (
         logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/instagram-logo.svg')} />)}
         toggle={() => {}}
         onPress={() => { navigation.navigate('Manage'); }}
+        index={1}
       />
     </View>
   </ScrollView>

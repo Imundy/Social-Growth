@@ -5,6 +5,7 @@ const styles = {
     flex: 1,
     paddingTop: 96,
     alignItems: 'center',
+    backgroundColor: 'white',
   },
   addAccount: {
     marginTop: 16,
