@@ -9,11 +9,13 @@ const styles = {
   cardContainer: {
     paddingVertical: 32,
     justifyContent: 'flex-start',
+    backgroundColor: 'white',
     alignItems: 'center',
   },
   tagResultContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    backgroundColor: 'white',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 16,

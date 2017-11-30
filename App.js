@@ -58,7 +58,7 @@ const DrawerContainer = ({ navigation }) => (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f6f6f6',
+    backgroundColor: 'white',
     paddingTop: 40,
   },
   item: {
@@ -69,6 +69,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   active: {
-    backgroundColor: '#DDDDDD',
+    backgroundColor: '#EEEEEE',
   },
 });

@@ -29,11 +29,11 @@ class Header extends Component {
 
   componentWillReceiveProps = (nextProps) => {
     let height = this.height;
-    height += !this.props.searchTextChange && !this.props.search && nextProps.searchTextChange && nextProps.search ? 64 : 0;
-    height += this.props.searchTextChange && this.props.search && !nextProps.searchTextChange && !nextProps.search ? -64 : 0;
+    height += !this.props.searchTextChange && !this.props.search && nextProps.searchTextChange && nextProps.search ? 40 : 0;
+    height += this.props.searchTextChange && this.props.search && !nextProps.searchTextChange && !nextProps.search ? -40 : 0;
 
     this.height = height;
-    this.header.transitionTo({ height: this.height });
+    this.header.transitionTo({ height: this.height }, 400, 'ease-out-cubic');
   }
 
   transitionHeader = (delta) => {

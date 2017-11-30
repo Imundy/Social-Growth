@@ -53,7 +53,6 @@ export default class Manage extends PureComponent {
 
   render() {
     const { screenProps } = this.props;
-    console.log(screenProps.following);
     return (
       <FlatList
         contentContainerStyle={{ backgroundColor: 'white' }}
