@@ -9,6 +9,7 @@ import React, { Component } from 'react';
 import { DrawerNavigator } from 'react-navigation';
 import Twitter from './app/screens/twitter';
 import Instagram from './app/screens/instagram';
+import Facebook from './app/screens/facebook';
 import Home from './app/screens/home';
 import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
 import SvgUri from 'react-native-svg-uri';
@@ -32,6 +33,9 @@ const AppNavigator = DrawerNavigator({
   Instagram: {
     screen: Instagram,
   },
+  Facebook: {
+    screen: Facebook,
+  },
 }, {
   contentComponent: ({ navigation }) => <DrawerContainer navigation={navigation} />,
   drawerWidth: 200,
@@ -54,6 +58,12 @@ const DrawerContainer = ({ navigation }) => (
       <SvgUri width="25" height="25" source={require('./app/icons/svg/instagram-logo-blue.svg')} />
       <View style={{ justifyContent: 'center', width: 120 }}>
         <Text style={{ textAlign: 'center', fontWeight: '500', color: colors.blue }}>INSTAGRAM</Text>
+      </View>
+    </TouchableOpacity>
+    <TouchableOpacity onPress={() => navigation.navigate('Facebook')} style={[styles.item, navigation.state.routes[navigation.state.index].key === 'Facebook' ? styles.active : {}]}>
+      <SvgUri width="25" height="25" source={require('./app/icons/svg/blue-facebook-logo.svg')} />
+      <View style={{ justifyContent: 'center', width: 120 }}>
+        <Text style={{ textAlign: 'center', fontWeight: '500', color: colors.blue }}>FACEBOOK</Text>
       </View>
     </TouchableOpacity>
   </View>
