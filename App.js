@@ -9,6 +9,7 @@ import React, { Component } from 'react';
 import { DrawerNavigator } from 'react-navigation';
 import Twitter from './app/screens/twitter';
 import Instagram from './app/screens/instagram';
+import Home from './app/screens/home';
 import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
 import SvgUri from 'react-native-svg-uri';
 import colors from './app/styles/colors';
@@ -22,6 +23,9 @@ export default class App extends Component<{}> {
 }
 
 const AppNavigator = DrawerNavigator({
+  Home: {
+    screen: Home,
+  },
   Twitter: {
     screen: Twitter,
   },

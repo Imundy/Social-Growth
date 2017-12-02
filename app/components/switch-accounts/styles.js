@@ -3,8 +3,8 @@ import colors from '../../styles/colors';
 const styles = {
   container: {
     flex: 1,
-    paddingTop: 96,
-    alignItems: 'center',
+    padding: 20,
+    alignItems: 'flex-start',
     backgroundColor: 'white',
   },
   addAccount: {
@@ -22,10 +22,15 @@ const styles = {
     fontSize: 18,
   },
   account: {
+    backgroundColor: 'white',
     flexDirection: 'row',
     alignSelf: 'stretch',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    borderColor: colors.blue,
+    borderRadius: 4,
+    borderWidth: 1,
+    padding: 12,
   },
   accountName: {
     fontSize: 20,
@@ -38,7 +43,6 @@ const styles = {
     height: 40,
     width: 40,
     borderRadius: 4,
-    marginVertical: 16,
   },
   selectText: {
     fontSize: 16,

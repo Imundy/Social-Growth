@@ -18,7 +18,13 @@ import Search from './search';
 import Manage from './manage';
 import styles from './styles';
 import config from '../../config';
-import { fetchUtil, loadKnownFollowers, addKnownFollowers, removeKnownFollowing, addKnownFollowing } from './util';
+import {
+  fetchUtil,
+  loadKnownFollowers,
+  addKnownFollowers,
+  removeKnownFollowing,
+  addKnownFollowing,
+} from './util';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -219,14 +225,14 @@ export default class Instagram extends Component {
           following: following.filter(u => u.id !== user.id),
         });
         await removeKnownFollowing(user.id);
-        // await this.followRequest(user.id, form, following);
+        await this.followRequest(user.id, form, following);
         break;
       case 'follow':
         this.setState({
           following: following.concat(user),
         });
         await addKnownFollowing(user.id);
-        // this.followRequest(user.id, form, following);
+        this.followRequest(user.id, form, following);
         break;
       default:
         break;
@@ -290,7 +296,7 @@ export default class Instagram extends Component {
         <Header
           title="INSTAGRAM"
           titleSize={36}
-          subtext={`${views[view.name].description} ${this.state.currentPostCount} ${this.state.currentRequestCount}`}
+          subtext={`${views[view.name].description}`}
           connect={!this.state.currentAccount ? this.instagramOAuth : null}
           search={views[view.name].searchable ? this.search : null}
           searchTextChange={views[view.name].searchable ? this.searchTextChange : null}
@@ -347,10 +353,6 @@ const Cards = ({ navigation }) => (
     </View>
   </ScrollView>
 );
-
-const labels = {
-  instagram: 'Instagram automations and actions can help you manage followers and grow you audience.',
-};
 
 const InstagramApp = new StackNavigator({
   Home: {

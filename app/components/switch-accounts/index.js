@@ -33,8 +33,13 @@ export default class SwitchAccounts extends PureComponent { // eslint-disable-li
 }
 
 const Account = ({ account, selectAccount, selectedAccountId }) => (
-  <TouchableOpacity style={styles.account} onPress={() => { selectAccount(account.id); }}>
-    <Image style={styles.profileImage} source={{ uri: account.profileImage }} />
-    <Text style={[styles.accountName, account.id === selectedAccountId ? styles.accountNameSelected : null]}>{account.displayName || account.username}</Text>
-  </TouchableOpacity>
+  <View style={styles.account} onPress={() => { selectAccount(account.id); }}>
+    <TouchableOpacity onPress={() => { selectAccount(account.id); }} style={{ flexDirection: 'row', alignItems: 'center', overflow: 'hidden', maxWidth: 200 }}>
+      <Image style={styles.profileImage} source={{ uri: account.profileImage }} />
+      <Text style={[styles.accountName, account.id === selectedAccountId ? styles.accountNameSelected : null]}>{account.displayName || account.username}</Text>
+    </TouchableOpacity>
+    <TouchableOpacity onPress={() => console.log('remove account')}>
+      <Text style={{ color: '#AAAAAA' }}>Remove</Text>
+    </TouchableOpacity>
+  </View>
 );
