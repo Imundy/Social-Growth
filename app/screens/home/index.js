@@ -35,9 +35,10 @@ export default class Home extends Component {
   };
 
   componentDidMount = async () => {
-    const accountId = await AsyncStorage.getItem('accountId');
-    if (accountId != null) {
-      this.props.navigation.navigate('Twitter');
+    const user = await AsyncStorage.getItem('user');
+    if (user != null) {
+      this.props.navigation.navigate('Settings');
+      return;
     }
 
     setTimeout(() => {
@@ -76,7 +77,10 @@ export default class Home extends Component {
         return;
       }
 
-      console.log(response);
+      const user = await response.json();
+
+      await AsyncStorage.setItem('user', JSON.stringify({ email: this.state.email, userId: user.userId, token: user.token }));
+      this.props.navigation.navigate('Settings');
     } catch (error) {
       console.log(error);
     }
@@ -117,8 +121,7 @@ export default class Home extends Component {
         return;
       }
 
-      await AsyncStorage.setItem('accountId', user.userId.toString());
-      this.props.navigation.navigate('Twitter');
+      this.signIn();
     } catch (error) {
       console.log(error);
     }

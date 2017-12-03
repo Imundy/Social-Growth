@@ -11,6 +11,7 @@ import Twitter from './app/screens/twitter';
 import Instagram from './app/screens/instagram';
 import Facebook from './app/screens/facebook';
 import Home from './app/screens/home';
+import Settings from './app/screens/settings';
 import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
 import SvgUri from 'react-native-svg-uri';
 import colors from './app/styles/colors';
@@ -35,6 +36,9 @@ const AppNavigator = DrawerNavigator({
   },
   Instagram: {
     screen: Instagram,
+  },
+  Settings: {
+    screen: Settings,
   },
 }, {
   contentComponent: ({ navigation }) => <DrawerContainer navigation={navigation} />,
@@ -64,6 +68,12 @@ const DrawerContainer = ({ navigation }) => (
       <SvgUri width="25" height="25" source={require('./app/icons/svg/blue-facebook-logo.svg')} />
       <View style={{ justifyContent: 'center', width: 120 }}>
         <Text style={{ textAlign: 'center', fontWeight: '500', color: colors.blue }}>FACEBOOK</Text>
+      </View>
+    </TouchableOpacity>
+    <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={[styles.item, navigation.state.routes[navigation.state.index].key === 'Settings' ? styles.active : {}]}>
+      <SvgUri width="25" height="25" source={require('./app/icons/svg/blue-settings-icon.svg')} />
+      <View style={{ justifyContent: 'center', width: 120 }}>
+        <Text style={{ textAlign: 'center', fontWeight: '500', color: colors.blue }}>SETTINGS</Text>
       </View>
     </TouchableOpacity>
   </View>

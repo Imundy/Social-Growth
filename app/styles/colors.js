@@ -5,6 +5,7 @@ const colors = {
   pink: '#EC7387',
   pinkAlt: 'rgba(253, 115, 135, 0.4)',
   lightGrey: '#AAAAAA',
+  darkGrey: '#777777',
   red: '#A74544',
 };
 
