@@ -18,7 +18,7 @@ Animatable.initializeRegistryWithDefinitions({
       translateY: 20,
     },
     to: {
-      height: 14,
+      height: 20,
       opacity: 1,
       translateY: 0,
     },
@@ -35,8 +35,8 @@ export default class Home extends Component {
   };
 
   componentDidMount = async () => {
-    const account = await AsyncStorage.getItem('account');
-    if (account != null) {
+    const accountId = await AsyncStorage.getItem('accountId');
+    if (accountId != null) {
       this.props.navigation.navigate('Twitter');
     }
 
@@ -45,6 +45,83 @@ export default class Home extends Component {
         hasLoaded: true,
       });
     }, 1000);
+  }
+
+  signIn = async () => {
+    if (this.state.passwordError || this.state.emailError || this.state.email === '' || this.state.password === '') {
+      return;
+    }
+
+    this.setState({
+      formError: null,
+    });
+
+    try {
+      const response = await fetch('http://localhost:3000/api/users/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: this.state.email,
+          password: this.state.password,
+        }),
+      });
+
+      if (response.status === 404 || response.status === 401) {
+        this.setState({ formError: 'Invalid username or password' });
+        return;
+      } else if (response.status < 200 || response.status >= 300) {
+        this.setState({ formError: 'An error occurred' });
+        return;
+      }
+
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  register = async () => {
+    if (this.state.passwordError || this.state.emailError || this.state.email === '' || this.state.password === '') {
+      return;
+    }
+
+    this.setState({
+      formError: null,
+    });
+
+    try {
+      const response = await fetch('http://localhost:3000/api/users/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: this.state.email,
+          password: this.state.password,
+        }),
+      });
+
+      if (response.status === 400) {
+        this.setState({ formError: 'Invalid username or password' });
+        return;
+      } else if (response.status < 200 || response.status >= 300) {
+        this.setState({ formError: 'An error occurred' });
+        return;
+      }
+
+      const user = await response.json();
+      if (user == null || user.userId == null) {
+        this.setState({ formError: 'An error occurred' });
+        return;
+      }
+
+      await AsyncStorage.setItem('accountId', user.userId.toString());
+      this.props.navigation.navigate('Twitter');
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   updateEmail = (text) => { this.setState({ email: text }); }
@@ -102,7 +179,7 @@ export default class Home extends Component {
 
   renderRegisterForm = () => (
     <Animatable.View style={styles.form} ref={(ref) => { this.form = ref; }}>
-      {this.state.emailError && <Animatable.Text animation="errorAnimation" duration={300} style={{ color: colors.red }}>{this.state.emailError}</Animatable.Text>}
+      {this.state.emailError && <Animatable.Text animation="errorAnimation" duration={200} style={{ color: colors.red, fontSize: 14 }}>{this.state.emailError}</Animatable.Text>}
       <TextInput
         style={styles.input}
         onChangeText={this.updateEmail}
@@ -114,7 +191,7 @@ export default class Home extends Component {
         autoCorrect={false}
         placeholder="Email"
       />
-      {this.state.passwordError && <Animatable.Text animation="errorAnimation" duration={300} style={{ color: colors.red }}>{this.state.passwordError}</Animatable.Text>}
+      {this.state.passwordError && <Animatable.Text animation="errorAnimation" duration={200} style={{ color: colors.red, fontSize: 14 }}>{this.state.passwordError}</Animatable.Text>}
       <TextInput
         style={styles.input}
         onChangeText={this.updatePassword}
@@ -156,6 +233,7 @@ export default class Home extends Component {
     return (
       <View style={styles.container}>
         <Text style={{ fontSize: 48, color: colors.blue, marginBottom: 12 }}>Simply Grow</Text>
+        {this.state.formError && <Animatable.Text animation="errorAnimation" duration={200} style={{ color: colors.red, fontSize: 14 }}>{this.state.formError}</Animatable.Text>}
         {signIn ? this.renderSigninForm() : this.renderRegisterForm()}
         {this.renderButtons()}
       </View>
