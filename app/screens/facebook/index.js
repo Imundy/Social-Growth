@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { ScrollView, View, AsyncStorage } from 'react-native';
+import { ScrollView, View, Modal, Text, TouchableOpacity, AsyncStorage, Dimensions } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import SvgUri from 'react-native-svg-uri';
 import { LoginManager } from 'react-native-fbsdk';
@@ -24,6 +24,21 @@ export default class Facebook extends Component {
     facebookAccounts: [],
     currentAccount: null,
     view: views.Home,
+    modalVisible: false,
+    settings: {
+      autoLikeReviews: {
+        on: false,
+        value: null
+      },
+      autoLikeComments: {
+        on: false,
+        value: null,
+      },
+      autoHideComments: {
+        on: false,
+        value: null,
+      }
+    }
   }
 
   async componentDidMount() {
@@ -55,17 +70,15 @@ export default class Facebook extends Component {
   }
 
   signIn = () => {
-    //LoginManager.logInWithPublishPermissions(['public_profile, manage_pages, publish_pages, pages_show_list, user_posts, user_photos'])
-    LoginManager.logInWithPublishPermissions(['manage_pages']).then((result) => {
-        if (result.isCancelled) {
-          alert('Login cancelled');
-        } else {
-          alert('Login success with permissions: ' + result.grantedPermissions.toString());
-        }
-      },
-      (error) => {
+    LoginManager.logInWithPublishPermissions(['manage_pages', 'publish_pages'])
+    .then((result) => {
+      if (result.grantedPermissions) {
+        console.log(result.grantedPermissions);
+      }
+    },
+    (error) => {
       console.log(error);
-      });
+    });
   }
 
   storeAccounts = async (facebookAccounts, currentAccount) => {
@@ -86,8 +99,19 @@ export default class Facebook extends Component {
     });
   }
 
+  updateReviewsRatingThreshold = (ratingThreshold) => {
+    const { settings } = this.state;
+    if (!ratingThreshold) {
+      settings.autoLikeReviews = { on: false, value: null };
+      this.setState({ settings, modalVisible: false });
+    } else {
+      settings.autoLikeReviews = { on: true, value: ratingThreshold };
+      this.setState({ settings, modalVisible: false });
+    }
+  }
+
   render() {
-    const { currentAccount, view } = this.state;
+    const { currentAccount, view, modalVisible, modalView, settings } = this.state;
 
     return (
       <View style={styles.container}>
@@ -107,14 +131,33 @@ export default class Facebook extends Component {
         <FacebookApp
           ref={(ref) => { this._navigator = ref; }}
           onNavigationStateChange={this.navigationStateChange}
-          screenProps={{}}
+          screenProps={{
+            showModal: (content) => { this.setState({ modalVisible: true, modalView: content }); },
+            updateRating: this.updateReviewsRatingThreshold,
+            settings,
+          }}
         />
+        <Modal
+          visible={modalVisible}
+          animationType="slide"
+          transparent
+        >  
+          <View
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: Dimensions.get('screen').height,
+            }}
+          >
+            {modalView}
+          </View>
+        </Modal>
       </View>
     );
   }
 }
 
-const Cards = ({ navigation }) => (
+const Cards = ({ navigation, screenProps }) => (
   <ScrollView>
     <View style={styles.cardContainer}>
       <Card
@@ -123,7 +166,9 @@ const Cards = ({ navigation }) => (
         color={colors.blueGreen}
         logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-facebook-logo.svg')} />)}
         toggle={() => {}}
-        onPress={() => { navigation.navigate('UserSearch'); }}
+        canToggle
+        on={screenProps.settings.autoLikeReviews.on}
+        onPress={() => { screenProps.showModal(<AutoLikeReview updateRating={screenProps.updateRating} />); }}
         index={0}
       />
       <Card
@@ -132,6 +177,7 @@ const Cards = ({ navigation }) => (
         color={colors.blue}
         logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-facebook-logo.svg')} />)}
         toggle={() => {}}
+        canToggle
         onPress={() => { navigation.navigate('UnfollowUsers'); }}
         index={1}
       />
@@ -141,6 +187,7 @@ const Cards = ({ navigation }) => (
         color={colors.pink}
         logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-facebook-logo.svg')} />)}
         toggle={() => {}}
+        canToggle
         onPress={() => { navigation.navigate('UnfollowUsers'); }}
         index={1}
       />
@@ -148,20 +195,24 @@ const Cards = ({ navigation }) => (
   </ScrollView>
 );
 
+const AutoLikeReview = ({ updateRating }) => (
+  <View style={styles.autoLikeReview.modal}>
+    <TouchableOpacity style={styles.autoLikeReview.button} onPress={() => updateRating(null)}>
+      <Text style={styles.autoLikeReview.text}>Off</Text>
+    </TouchableOpacity>
+    {[ 1, 2, 3, 4, 5 ].map(rating => (
+      <TouchableOpacity key={rating} style={styles.autoLikeReview.button} onPress={() => updateRating(rating)}>
+        <Text style={styles.autoLikeReview.text}>{`${rating} star${rating > 1 ? 's' : ''}`}</Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+);
+
 const EmptyThing = () => (<View style={{height: 50, width: 50, backgroundColor: 'red'}} />)
 
 const FacebookApp = new StackNavigator({
   Home: {
     screen: Cards,
-  },
-  AutoLikeReviews: {
-    screen: EmptyThing,
-  },
-  AutoLikeComments: {
-    screen: EmptyThing,
-  },
-  AutoHideComments: {
-    screen: EmptyThing,
   },
   SwitchAccounts: {
     screen: SwitchAccounts,
