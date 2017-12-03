@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { ScrollView, View, Modal, Text, TouchableOpacity, AsyncStorage, Dimensions } from 'react-native';
+import React, { Component, PureComponent } from 'react';
+import { ScrollView, View, Modal, Text, TextInput, TouchableOpacity, AsyncStorage, Dimensions } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import SvgUri from 'react-native-svg-uri';
 import { LoginManager } from 'react-native-fbsdk';
@@ -110,6 +110,17 @@ export default class Facebook extends Component {
     }
   }
 
+  updateCriteriaSetting = (setting, value) => {
+    const { settings } = this.state;
+    if (!value) {
+      settings[setting] = { on: false, value: null };
+      this.setState({ settings, modalVisible: false });
+    } else {
+      settings[setting] = { on: true, value };
+      this.setState({ settings, modalVisible: false });
+    }
+  };
+
   render() {
     const { currentAccount, view, modalVisible, modalView, settings } = this.state;
 
@@ -135,6 +146,7 @@ export default class Facebook extends Component {
             showModal: (content) => { this.setState({ modalVisible: true, modalView: content }); },
             updateRating: this.updateReviewsRatingThreshold,
             settings,
+            updateCriteria: this.updateCriteriaSetting,
           }}
         />
         <Modal
@@ -178,7 +190,14 @@ const Cards = ({ navigation, screenProps }) => (
         logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-facebook-logo.svg')} />)}
         toggle={() => {}}
         canToggle
-        onPress={() => { navigation.navigate('UnfollowUsers'); }}
+        on={screenProps.settings.autoLikeComments.on}
+        onPress={() => {
+          screenProps.showModal(<UpdateCriteria
+            updateCriteria={screenProps.updateCriteria}
+            setting="autoLikeComments"
+            value={screenProps.settings.autoLikeComments.value}
+          />);
+        }}
         index={1}
       />
       <Card
@@ -188,8 +207,15 @@ const Cards = ({ navigation, screenProps }) => (
         logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-facebook-logo.svg')} />)}
         toggle={() => {}}
         canToggle
-        onPress={() => { navigation.navigate('UnfollowUsers'); }}
-        index={1}
+        on={screenProps.settings.autoHideComments.on}
+        onPress={() => {
+          screenProps.showModal(<UpdateCriteria
+            updateCriteria={screenProps.updateCriteria}
+            setting="autoHideComments"
+            value={screenProps.settings.autoHideComments.value}
+          />);
+        }}
+        index={2}
       />
     </View>
   </ScrollView>
@@ -208,7 +234,35 @@ const AutoLikeReview = ({ updateRating }) => (
   </View>
 );
 
-const EmptyThing = () => (<View style={{height: 50, width: 50, backgroundColor: 'red'}} />)
+class UpdateCriteria extends PureComponent {
+  state = {
+    text: this.props.value || '',
+  };
+
+  render() {
+    const { updateCriteria, setting } = this.props;
+    const { text } = this.state;
+
+    return (
+      <View style={styles.criteriaText.container}>
+        <Text style={styles.criteriaText.instructions}>{settingsInstructions[setting]}</Text>
+        <TextInput
+          style={styles.criteriaText.input}
+          value={text}
+          editable
+          multiline
+          onChangeText={value => this.setState({ text: value })}
+        />
+        <TouchableOpacity style={styles.criteriaText.offButton} onPress={() => updateCriteria(setting, null)}>
+          <Text style={styles.criteriaText.offButtonText}>Off</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.criteriaText.button} onPress={() => updateCriteria(setting, text)}>
+          <Text style={styles.criteriaText.buttonText}>Save</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+}
 
 const FacebookApp = new StackNavigator({
   Home: {
@@ -242,4 +296,9 @@ const views = {
     name: 'SwitchAccounts',
     description: 'Select which account to use.',
   },
+};
+
+const settingsInstructions = {
+  autoLikeComments: 'Comma separated words and phrases to indicate a like:',
+  autoHideComments: 'Comma separated words and phrases to avoid:',
 };
