@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { ScrollView, View, AsyncStorage } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import SvgUri from 'react-native-svg-uri';
+import { LoginManager } from 'react-native-fbsdk';
 
 import Header from '../../components/header';
 import Card from '../../components/card';
@@ -52,6 +53,21 @@ export default class Facebook extends Component {
       this.getCurrentAccountInfo();
     }*/
   }
+
+  signIn = () => {
+    //LoginManager.logInWithPublishPermissions(['public_profile, manage_pages, publish_pages, pages_show_list, user_posts, user_photos'])
+    LoginManager.logInWithPublishPermissions(['manage_pages']).then((result) => {
+        if (result.isCancelled) {
+          alert('Login cancelled');
+        } else {
+          alert('Login success with permissions: ' + result.grantedPermissions.toString());
+        }
+      },
+      (error) => {
+      console.log(error);
+      });
+  }
+
   storeAccounts = async (facebookAccounts, currentAccount) => {
     const accountsPromise = AsyncStorage.setItem('facebookAccounts', JSON.stringify(facebookAccounts));
     const currentAccountPromise = AsyncStorage.setItem('currentfacebookAccount', JSON.stringify(currentAccount));

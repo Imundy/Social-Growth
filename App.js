@@ -27,14 +27,14 @@ const AppNavigator = DrawerNavigator({
   Home: {
     screen: Home,
   },
+  Facebook: {
+    screen: Facebook,
+  },
   Twitter: {
     screen: Twitter,
   },
   Instagram: {
     screen: Instagram,
-  },
-  Facebook: {
-    screen: Facebook,
   },
 }, {
   contentComponent: ({ navigation }) => <DrawerContainer navigation={navigation} />,
