@@ -26,6 +26,7 @@
 	<string>????</string>
   <key>LSApplicationQueriesSchemes</key>
   <array>
+    <string>socialauth</string>
     <string>fbapi</string>
     <string>fb-messenger-api</string>
     <string>fbauth2</string>
@@ -37,11 +38,8 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>socialauth</string>
-			</array>
-      <key>CFBundleURLSchemes</key>
-      <array>
         <string>fb1586270334794438</string>
-      </array>
+			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
