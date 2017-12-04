@@ -177,7 +177,7 @@ const Cards = ({ navigation, screenProps }) => (
         title="AUTO LIKE REVIEWS"
         color={colors.blueGreen}
         logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-facebook-logo.svg')} />)}
-        toggle={() => {}}
+        toggle={() => { screenProps.showModal(<AutoLikeReview updateRating={screenProps.updateRating} />); }}
         canToggle
         on={screenProps.settings.autoLikeReviews.on}
         onPress={() => { screenProps.showModal(<AutoLikeReview updateRating={screenProps.updateRating} />); }}
@@ -188,7 +188,13 @@ const Cards = ({ navigation, screenProps }) => (
         title="AUTO LIKE COMMENTS"
         color={colors.blue}
         logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-facebook-logo.svg')} />)}
-        toggle={() => {}}
+        toggle={() => {
+          screenProps.showModal(<UpdateCriteria
+            updateCriteria={screenProps.updateCriteria}
+            setting="autoLikeComments"
+            value={screenProps.settings.autoLikeComments.value}
+          />);
+        }}
         canToggle
         on={screenProps.settings.autoLikeComments.on}
         onPress={() => {
@@ -205,7 +211,13 @@ const Cards = ({ navigation, screenProps }) => (
         title="AUTO HIDE COMMENTS"
         color={colors.pink}
         logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-facebook-logo.svg')} />)}
-        toggle={() => {}}
+        toggle={() => {
+          screenProps.showModal(<UpdateCriteria
+            updateCriteria={screenProps.updateCriteria}
+            setting="autoHideComments"
+            value={screenProps.settings.autoHideComments.value}
+          />);
+        }}
         canToggle
         on={screenProps.settings.autoHideComments.on}
         onPress={() => {

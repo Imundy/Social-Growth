@@ -43,11 +43,18 @@ const styles = {
   },
   toggleButtonContainer: {
     width: 50,
-    backgroundColor: colors.blue,
     borderRadius: 10,
     height: 20,
+    borderWidth: 0.5,
+    borderColor: '#FFF',
     justifyContent: 'center',
     paddingHorizontal: 2,
+    on: {
+      backgroundColor: colors.blue,
+    },
+    off: {
+      backgroundColor: '#BBB',
+    },
   },
   toggleButton: {
     width: 16,

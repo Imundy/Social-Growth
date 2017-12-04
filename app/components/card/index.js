@@ -12,7 +12,7 @@ const Card = ({ description, title, onPress, logo, canToggle, toggle, on, color,
         <View style={{ marginTop: -20 }}>
           {canToggle ? <View style={styles.toggleContainer}>
             <TouchableOpacity onPress={toggle}>
-              <View style={{ alignItems: on ? 'flex-end' : 'flex-start', ...styles.toggleButtonContainer }}>
+              <View style={{ alignItems: on ? 'flex-end' : 'flex-start', ...styles.toggleButtonContainer, ...(on ? styles.toggleButtonContainer.on : styles.toggleButtonContainer.off) }}>
                 <View style={styles.toggleButton} />
               </View>
             </TouchableOpacity>
