@@ -3,6 +3,7 @@ import {
   AsyncStorage,
   Dimensions,
   Image,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -108,6 +109,7 @@ export default class Settings extends Component {
         displayName: twitterResponse.name,
       };
       await this.storeAccounts(twitterResponse, 'twitter');
+      this.props.navigation.navigate('Twitter');
     } catch (error) {
       console.warn(error);
     }
@@ -129,6 +131,7 @@ export default class Settings extends Component {
       }
 
       await this.storeAccounts(newAccount, 'instagram');
+      this.props.navigation.navigate('Instagram');
     } catch (error) {
       console.log(error);
     }
@@ -157,7 +160,7 @@ export default class Settings extends Component {
       this.setState({
         [`${social}Accounts`]: accounts,
         [social]: newAccount,
-      }, () => console.log(this.state));
+      });
     } catch (error) {
       console.log(error);
     }
@@ -221,7 +224,7 @@ export default class Settings extends Component {
     }
 
     return (
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity style={{ width: 40, height: 40, position: 'absolute', top: 24, left: 20 }} onPress={() => this.props.navigation.navigate('DrawerOpen')} >
             <SvgUri width="40" height="40" source={require('../../icons/svg/ic_menu_black_24px.svg')} />
@@ -276,7 +279,7 @@ export default class Settings extends Component {
             </View>
           }
         </View>
-      </View>
+      </ScrollView>
     );
   }
 }

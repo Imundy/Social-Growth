@@ -46,7 +46,6 @@ export default class Search extends Component {
     });
 
     const knownFollowing = await loadKnownFollowing();
-    console.log(knownFollowing);
     const { knownFollowers } = this.state;
 
     this.props.screenProps.request(`https://api.instagram.com/v1/tags/${query}/media/recent?count=50&access_token=${this.props.screenProps.accessToken}`)
