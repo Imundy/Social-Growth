@@ -1,11 +1,8 @@
 import React, { Component } from 'react';
 import {
   AsyncStorage,
-  Dimensions,
   ScrollView,
   View,
-  WebView,
-  Text,
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import SvgUri from 'react-native-svg-uri';
@@ -13,11 +10,9 @@ import SvgUri from 'react-native-svg-uri';
 import colors from '../../styles/colors';
 import Card from '../../components/card';
 import Header from '../../components/header';
-import SwitchAccounts from '../../components/switch-accounts';
 import Search from './search';
 import Manage from './manage';
 import styles from './styles';
-import config from '../../config';
 import {
   fetchUtil,
   loadKnownFollowers,
@@ -26,23 +21,21 @@ import {
   addKnownFollowing,
 } from './util';
 
-const windowWidth = Dimensions.get('window').width;
-
 export default class Instagram extends Component {
   state = {
     isLoading: false,
     accounts: [],
     currentAccount: null,
     error: null,
-    url: 'https://instagram.com/accounts/logout',
     view: views.Home,
     currentPostCount: 0,
     currentRequestCount: 0,
   }
 
   componentDidMount = async () => {
-    let currentAccount = await AsyncStorage.getItem('currentInstagramAccount');
-    let accounts = await AsyncStorage.getItem('instagramAccounts');
+    let currentAccount = await AsyncStorage.getItem('currentAccount:instagram');
+    let accounts = await AsyncStorage.getItem('accounts:instagram');
+    console.log(currentAccount);
 
     accounts = JSON.parse(accounts);
     currentAccount = JSON.parse(currentAccount);
@@ -75,15 +68,15 @@ export default class Instagram extends Component {
     accounts.push(currentAccount);
 
     this.setState({ currentAccount, accounts });
-    await AsyncStorage.setItem('currentInstagramAccount', JSON.stringify(currentAccount));
-    await AsyncStorage.setItem('instagramAccounts', JSON.stringify(accounts));
+    await AsyncStorage.setItem('currentAccount:instagram', JSON.stringify(currentAccount));
+    await AsyncStorage.setItem('accounts:instagram', JSON.stringify(accounts));
     return currentAccount;
   }
 
   selectAccount = (accountId) => {
-    const currentAccount = this.state.accounts.find(x => x.data.id === accountId);
+    const currentAccount = this.state.accounts.find(x => x.id === accountId);
     this.setState({ currentAccount });
-    AsyncStorage.setItem('currentInstagramAccount', JSON.stringify(currentAccount));
+    AsyncStorage.setItem('currentAccount:instagram', JSON.stringify(currentAccount));
     this._navigator._navigation.goBack();
   }
 
@@ -102,37 +95,6 @@ export default class Instagram extends Component {
     return request.request;
   }
 
-  instagramOAuth = () => {
-    this.setState({
-      isAuthenticating: true,
-    });
-  }
-
-  onNavigationStateChange = async (event) => {
-    const token = event.url.split('access_token')[1];
-    if (token != null) {
-      const currentAccount = await this.addCurrenAccount(token.substring(1));
-      this.setState({
-        currentAccount,
-        isAuthenticating: false,
-      });
-      clearTimeout(this.timeout);
-    }
-
-    if (event.url.indexOf('https://www.instagram.com/accounts/login/') === 0) {
-      clearTimeout(this.timeout);
-    }
-
-    if (this.timeout == null) {
-      this.timeout = setTimeout(() => {
-        this.setState({
-          isAuthenticating: false,
-          error: 'timeout',
-        });
-      }, 10000);
-    }
-  }
-
   stackStateChange = (prevState, currentState) => {
     this.view = views[currentState.routes[currentState.index].routeName];
     if (views[currentState.routes[currentState.index].routeName].name === 'Manage') {
@@ -143,12 +105,6 @@ export default class Instagram extends Component {
 
     this.setState({
       view: views[currentState.routes[currentState.index].routeName],
-    });
-  }
-
-  auth = () => {
-    this.setState({
-      url: `https://instagram.com/oauth/authorize/?client_id=${config.instagramToken}&redirect_uri=${config.instagramRedirect}&response_type=token&scope=public_content+follower_list+relationships`,
     });
   }
 
@@ -269,18 +225,6 @@ export default class Instagram extends Component {
           unfollow: this.updateFollow,
           follow: this.updateFollow,
         };
-      case views.SwitchAccounts.name:
-        return {
-          serviceName: 'Instagram',
-          accounts: this.state.accounts == null ? [] : this.state.accounts.map(account => ({
-            id: account.data.id,
-            profileImage: account.data.profile_picture,
-            displayName: account.data.full_name,
-          })),
-          selectedAccountId: this.state.currentAccount && this.state.currentAccount.id,
-          addAccount: this.instagramOAuth,
-          selectAccount: this.selectAccount,
-        };
       case views.Home.name:
       default:
         return {};
@@ -300,25 +244,11 @@ export default class Instagram extends Component {
           connect={!this.state.currentAccount ? this.instagramOAuth : null}
           search={views[view.name].searchable ? this.search : null}
           searchTextChange={views[view.name].searchable ? this.searchTextChange : null}
-          account={this.state.currentAccount && this.state.currentAccount.data}
-          switchAccounts={() => {
-            this._navigator._navigation.navigate('SwitchAccounts');
-          }}
-          navigate={view.name === 'Search' || view.name === 'Manage' || view.name === 'SwitchAccounts' ? () => this._navigator._navigation.goBack() : () => this.props.navigation.navigate('DrawerOpen')}
-          showMenu={view.name === 'Search' || view.name === 'Manage' || view.name === 'SwitchAccounts'}
+          account={this.state.currentAccount}
+          navigate={view.name === 'Search' || view.name === 'Manage' ? () => this._navigator._navigation.goBack() : () => this.props.navigation.navigate('DrawerOpen')}
+          showMenu={view.name === 'Search' || view.name === 'Manage'}
           ref={(ref) => { this.header = ref; }}
         />
-        {this.state.isAuthenticating && <View style={{ top: 0, left: 0, zIndex: 2, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.4)', position: 'absolute', justifyContent: 'center' }}>
-          <View style={{ width: windowWidth, height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-            <WebView
-              style={{ width: windowWidth, height: '100%' }}
-              source={{ uri: this.state.url }}
-              ref={(ref) => { this.webview = ref; }}
-              onNavigationStateChange={this.onNavigationStateChange}
-              onLoad={this.auth}
-            />
-          </View>
-        </View>}
         <InstagramApp
           ref={(ref) => { this._navigator = ref; }}
           onNavigationStateChange={this.stackStateChange}
@@ -364,9 +294,6 @@ const InstagramApp = new StackNavigator({
   Manage: {
     screen: Manage,
   },
-  SwitchAccounts: {
-    screen: SwitchAccounts,
-  },
 }, {
   headerMode: 'none',
 });
@@ -384,9 +311,5 @@ const views = {
   Manage: {
     name: 'Manage',
     description: 'Manage accounts you follow.',
-  },
-  SwitchAccounts: {
-    name: 'SwitchAccounts',
-    description: 'Select which account to use.',
   },
 };

@@ -69,7 +69,7 @@ Header.propTypes = {
   search: PropTypes.func,
   searchTextChange: PropTypes.func,
   connect: PropTypes.func,
-  switchAccounts: PropTypes.func.isRequired,
+  switchAccounts: PropTypes.func,
   account: PropTypes.shape({
     name: PropTypes.string,
   }),
@@ -83,11 +83,8 @@ const renderConnect = connect => (
   </View>
 );
 
-const renderSwitchAccounts = (account, switchAccounts) => (
+const renderSwitchAccounts = account => (
   <View style={styles.switchContainer}>
-    <TouchableOpacity style={styles.switchButton} onPress={switchAccounts}>
-      <Text style={{ color: 'white', fontWeight: 'bold', textDecorationLine: 'underline' }}>Switch Account</Text>
-    </TouchableOpacity>
     <Text style={styles.account}>{account.name || account.username}</Text>
   </View>
   );

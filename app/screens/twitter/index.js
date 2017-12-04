@@ -29,9 +29,9 @@ export default class Twitter extends Component {
   }
 
   async componentDidMount() {
-    let twitterAccounts = await AsyncStorage.getItem('twitterAccounts');
+    let twitterAccounts = await AsyncStorage.getItem('accounts:twitter');
     if (twitterAccounts) {
-      const currentAccount = await AsyncStorage.getItem('currentTwitterAccount');
+      const currentAccount = await AsyncStorage.getItem('currentAccount:twitter');
       twitterAccounts = JSON.parse(twitterAccounts);
       this.setState({ connected: true, twitterAccounts, currentAccount: currentAccount ? JSON.parse(currentAccount) : twitterAccounts[0] }, this.createTwitterClient); // eslint-disable-line
     }
@@ -67,8 +67,8 @@ export default class Twitter extends Component {
   }
 
   storeAccounts = async (twitterAccounts, currentAccount) => {
-    const accountsPromise = AsyncStorage.setItem('twitterAccounts', JSON.stringify(twitterAccounts));
-    const currentAccountPromise = AsyncStorage.setItem('currentTwitterAccount', JSON.stringify(currentAccount));
+    const accountsPromise = AsyncStorage.setItem('accounts:twitter', JSON.stringify(twitterAccounts));
+    const currentAccountPromise = AsyncStorage.setItem('currentAccount:twitter', JSON.stringify(currentAccount));
     return Promise.all(accountsPromise, currentAccountPromise);
   }
 
@@ -93,7 +93,7 @@ export default class Twitter extends Component {
   selectAccount = (accountId) => {
     const currentAccount = this.state.twitterAccounts.find(x => x.id === accountId);
     this.setState({ currentAccount }, this.createTwitterClient);
-    AsyncStorage.setItem('currentTwitterAccount', JSON.stringify(currentAccount));
+    AsyncStorage.setItem('currentAccount:twitter', JSON.stringify(currentAccount));
     this._navigator._navigation.goBack();
   }
 

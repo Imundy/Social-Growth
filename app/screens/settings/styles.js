@@ -65,11 +65,23 @@ export const styles = {
     height: 32,
     width: 32,
     borderRadius: 4,
+    marginRight: 12,
   },
   addAccount: {
     marginLeft: 12,
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingBottom: 6,
+  },
+  cancel: {
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    zIndex: 2,
+    marginTop: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
 };

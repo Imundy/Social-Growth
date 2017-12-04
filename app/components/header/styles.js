@@ -32,7 +32,7 @@ const styles = {
   switchContainer: {
     alignSelf: 'stretch',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     marginTop: 20,
   },
