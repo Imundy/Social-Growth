@@ -2,12 +2,11 @@ import React, { Component, PureComponent } from 'react';
 import { ScrollView, View, Modal, Text, TextInput, TouchableOpacity, AsyncStorage, Dimensions } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import SvgUri from 'react-native-svg-uri';
-import { LoginManager } from 'react-native-fbsdk';
+import { LoginManager, AccessToken, GraphRequest, GraphRequestManager } from 'react-native-fbsdk';
 
 import Header from '../../components/header';
 import Card from '../../components/card';
 import SwitchAccounts from '../../components/switch-accounts';
-import config from '../../config';
 import colors from '../../styles/colors';
 import styles from './styles';
 
@@ -28,7 +27,7 @@ export default class Facebook extends Component {
     settings: {
       autoLikeReviews: {
         on: false,
-        value: null
+        value: null,
       },
       autoLikeComments: {
         on: false,
@@ -37,8 +36,8 @@ export default class Facebook extends Component {
       autoHideComments: {
         on: false,
         value: null,
-      }
-    }
+      },
+    },
   }
 
   async componentDidMount() {
@@ -71,14 +70,32 @@ export default class Facebook extends Component {
 
   signIn = () => {
     LoginManager.logInWithPublishPermissions(['manage_pages', 'publish_pages'])
-    .then((result) => {
-      if (result.grantedPermissions) {
-        console.log(result.grantedPermissions);
+    .then(async (result) => {
+      if (!result.isCancelled) {
+        const token = await AccessToken.getCurrentAccessToken();
+        await this.getAccountForToken(token);
+        this.setState({ currentAccount: token });
       }
     },
     (error) => {
       console.log(error);
     });
+  }
+
+  getAccountForToken = async (token) => {
+    const infoRequest = new GraphRequest(
+      '/me',
+      null,
+      (error, result) => {
+        if (!error) {
+          const currentAccount = { ...token, ...result };
+          const facebookAccounts = [...this.state.facebookAccounts, currentAccount];
+          this.setState({ currentAccount, facebookAccounts });
+          this.storeAccounts(facebookAccounts, currentAccount);
+        }
+      },
+    );
+    new GraphRequestManager().addRequest(infoRequest).start();
   }
 
   storeAccounts = async (facebookAccounts, currentAccount) => {
@@ -131,12 +148,12 @@ export default class Facebook extends Component {
           titleSize={36}
           subtext={views[view.name].description}
           connect={view.name === views.Home.name ? this.signIn : null}
-          account={currentAccount ? { name: `@${currentAccount.name}` } : null}
+          account={currentAccount ? { name: currentAccount.name } : null}
           switchAccounts={() => {
             this._navigator._navigation.navigate('SwitchAccounts');
           }}
-          navigate={view.name === 'UserSearch' || view.name === 'UnfollowUsers' || view.name === 'SwitchAccounts' ? () => this._navigator._navigation.goBack() : () => this.props.navigation.navigate('DrawerOpen')}
-          showMenu={view.name === 'UserSearch' || view.name === 'UnfollowUsers' || view.name === 'SwitchAccounts'}
+          navigate={view.name === 'SwitchAccounts' ? () => this._navigator._navigation.goBack() : () => this.props.navigation.navigate('DrawerOpen')}
+          showMenu={view.name === 'SwitchAccounts'}
           ref={(ref) => { this.header = ref; }}
         />
         <FacebookApp
