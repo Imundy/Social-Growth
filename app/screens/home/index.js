@@ -50,7 +50,6 @@ export default class Home extends Component {
   }
 
   storeAccounts = async ({ accounts }) => {
-    console.log(accounts);
     await Promise.all(accounts.map(async (account) => {
       if (account.type === 'instagram') {
         const me = await fetch(`https://api.instagram.com/v1/users/self/?access_token=${account.tokens[0]}`).then(response => response.json());
