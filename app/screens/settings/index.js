@@ -117,6 +117,7 @@ export default class Settings extends Component {
 
   addInstagramAccount = async (accessToken) => {
     try {
+      const { instagramAccounts } = this.state;
       const me = await fetch(`https://api.instagram.com/v1/users/self/?access_token=${accessToken}`).then(response => response.json());
       const newAccount = {
         ...me.data,
@@ -126,7 +127,7 @@ export default class Settings extends Component {
         displayName: me.data.full_name,
       };
 
-      if (this.state.instagramAccounts.find(account => account.id === newAccount.id)) {
+      if (instagramAccounts && instagramAccounts.find(account => account.id === newAccount.id)) {
         return;
       }
 
@@ -140,7 +141,25 @@ export default class Settings extends Component {
   removeAccount = async (accountId, social) => {
     try {
       let accounts = [...(this.state[`${social}Accounts`] || [])];
-      accounts = accounts.filter(account => account.id !== accountId);
+      const account = accounts.find(acc => acc.id === accountId);
+      accounts = accounts.filter(acc => acc.id !== accountId);
+
+      const response = await fetch('http://localhost:3000/api/social/accounts/remove', {
+        method: 'POST',
+        headers: {
+          Authorization: `jwt ${this.state.user.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: this.state.user.userId,
+          accountId: account.accountId,
+        }),
+      });
+
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error('Request failed');
+      }
+
       await AsyncStorage.setItem(`accounts:${social}`, JSON.stringify(accounts));
       this.setState({ [`${social}Accounts`]: accounts });
       if (this.state[social].id === accountId) {
@@ -154,7 +173,28 @@ export default class Settings extends Component {
   storeAccounts = async (newAccount, social) => {
     try {
       const accounts = [...(this.state[`${social}Accounts`] || [])];
-      accounts.push(newAccount);
+      const response = await fetch('http://localhost:3000/api/social/accounts/add', {
+        method: 'POST',
+        headers: {
+          Authorization: `jwt ${this.state.user.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: this.state.user.userId,
+          tokens: newAccount.tokens || [newAccount.accessToken],
+          type: social,
+          socialAccountId: newAccount.id,
+        }),
+      });
+
+      const { accountId } = await response.json();
+      const resultAccount = { ...newAccount, accountId };
+      accounts.push(resultAccount);
+
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error('Request failed');
+      }
+
       await AsyncStorage.setItem(`accounts:${social}`, JSON.stringify(accounts));
       await AsyncStorage.setItem(`currentAccount:${social}`, JSON.stringify(newAccount));
       this.setState({

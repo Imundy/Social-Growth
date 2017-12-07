@@ -35,7 +35,6 @@ export default class Instagram extends Component {
   componentDidMount = async () => {
     let currentAccount = await AsyncStorage.getItem('currentAccount:instagram');
     let accounts = await AsyncStorage.getItem('accounts:instagram');
-    console.log(currentAccount);
 
     accounts = JSON.parse(accounts);
     currentAccount = JSON.parse(currentAccount);

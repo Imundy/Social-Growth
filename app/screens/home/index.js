@@ -9,6 +9,7 @@ import {
 import * as Animatable from 'react-native-animatable';
 import colors from '../../styles/colors';
 import styles from './styles';
+import twitter from 'react-native-twitter';
 
 Animatable.initializeRegistryWithDefinitions({
   errorAnimation: {
@@ -48,6 +49,31 @@ export default class Home extends Component {
     }, 1000);
   }
 
+  storeAccounts = async ({ accounts }) => {
+    console.log(accounts);
+    await Promise.all(accounts.map(async (account) => {
+      if (account.type === 'instagram') {
+        const me = await fetch(`https://api.instagram.com/v1/users/self/?access_token=${account.tokens[0]}`).then(response => response.json());
+        let instagramAccounts = await AsyncStorage.getItem('accounts:instagram') || '[]';
+        instagramAccounts = JSON.parse(instagramAccounts);
+        const currentAccount = { ...me.data, accessToken: account.tokens[0] };
+        instagramAccounts.push(currentAccount);
+        const promises = [];
+
+        promises.push(AsyncStorage.setItem('currentAccount:instagram', JSON.stringify(currentAccount)));
+        promises.push(AsyncStorage.setItem('accounts:instagram', JSON.stringify(instagramAccounts)));
+        return Promise.all(promises);
+      } else if (account.type === 'twitter') {
+        let twitterAccounts = await AsyncStorage.getItem('accounts:twitter') || '[]';
+        twitterAccounts = JSON.parse(twitterAccounts);
+        twitterAccounts.push({ id: account.socialAccountId, accountId: account.id });
+        const accountsPromise = AsyncStorage.setItem('accounts:twitter', JSON.stringify(twitterAccounts));
+        const currentAccountPromise = AsyncStorage.setItem('currentAccount:twitter', JSON.stringify({ id: account.socialAccountId, accountId: account.id }));
+        return Promise.all(accountsPromise, currentAccountPromise);
+      }
+    }));
+  }
+
   signIn = async () => {
     if (this.state.passwordError || this.state.emailError || this.state.email === '' || this.state.password === '') {
       return;
@@ -78,6 +104,10 @@ export default class Home extends Component {
       }
 
       const user = await response.json();
+
+      let accounts = await fetch('http://localhost:3000/api/social/accounts', { headers: { Authorization: `jwt ${user.token}` } });
+      accounts = await accounts.json();
+      await this.storeAccounts(accounts);
 
       await AsyncStorage.setItem('user', JSON.stringify({ email: this.state.email, userId: user.userId, token: user.token }));
       this.props.navigation.navigate('Settings');
