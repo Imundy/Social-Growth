@@ -63,7 +63,7 @@ export default class Settings extends Component {
     facebookAccounts = facebookAccounts && JSON.parse(facebookAccounts);
 
     if (facebook != null && facebook.profileImage != null) {
-      const user = await fbRequest.userProfile();
+      const user = await fbRequest.userProfile(facebook.tokens[0]);
       facebook = { ...facebook, profileImage: user.picture.data.url, displayName: user.name };
       await AsyncStorage.setItem('currentAccount:facebook', JSON.stringify(facebook));
       await AsyncStorage.setItem('accounts:facebook', JSON.stringify([...facebookAccounts.filter(x => x.id === facebook.id.toString()), facebook]));
@@ -133,12 +133,14 @@ export default class Settings extends Component {
   }
 
   addFacebookAccount = async () => {
+    await LoginManager.setLoginBehavior('web');
+    await LoginManager.logOut();
     const result = await LoginManager.logInWithPublishPermissions(['manage_pages', 'publish_pages']);
     const { facebookAccounts } = this.state;
 
     if (!result.isCancelled) {
       const token = await AccessToken.getCurrentAccessToken();
-      const user = await fbRequest.userProfile();
+      const user = await fbRequest.userProfile(token.accessToken);
       const newAccount = { ...user, accessToken: token.accessToken, profileImage: user.picture.data.url, displayName: user.name, tokens: [token.accessToken] };
       await AsyncStorage.setItem('currentAccount:facebook', JSON.stringify(newAccount));
       await AsyncStorage.setItem('accounts:facebook', JSON.stringify([...(facebookAccounts || []).filter(x => x.id === newAccount.id.toString()), newAccount]));
@@ -227,7 +229,7 @@ export default class Settings extends Component {
       if (this.state[social].id === accountId) {
         this.setState({ [social]: accounts.length !== 0 ? accounts[0] : null });
         if (accounts.length !== 0) {
-          await AsyncStorage.setItem(`currentAccount:${social}`, accounts[0]);
+          await AsyncStorage.setItem(`currentAccount:${social}`, JSON.stringify(accounts[0]));
         } else {
           await AsyncStorage.removeItem(`currentAccount:${social}`);
         }
