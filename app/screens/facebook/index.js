@@ -40,68 +40,46 @@ export default class Facebook extends Component {
     },
   }
 
-  async componentDidMount() {
-    let facebookAccounts = await AsyncStorage.getItem('facebookAccounts');
-    if (facebookAccounts) {
-      const currentAccount = await AsyncStorage.getItem('currentFacebookAccount');
-      facebookAccounts = JSON.parse(facebookAccounts);
-      this.setState({ connected: true, facebookAccounts, currentAccount: currentAccount ? JSON.parse(currentAccount) : facebookAccounts[0] }, this.createfacebookClient); // eslint-disable-line
-    }
-    this.props.navigation.navigate('SwitchAccounts');
-  }
+  componentDidMount = async () => {
+    let facebookAccounts = await AsyncStorage.getItem('accounts:facebook');
 
-  createfacebookClient = () => {
-    if (!this.state.currentAccount) {
-      return;
-    }
+    let currentAccount = await AsyncStorage.getItem('currentAccount:facebook');
+    let settings = await AsyncStorage.getItem('settings:facebook');
+    let user = await AsyncStorage.getItem('user');
 
-    /*const { accessToken, accessTokenSecret } = this.state.currentAccount;
-    const clients = facebook({
-      consumerKey: config.facebookConsumerToken,
-      consumerSecret: config.facebookConsumerSecret,
-      accessToken,
-      accessTokenSecret,
+    user = user && JSON.parse(user);
+    currentAccount = currentAccount && JSON.parse(currentAccount);
+    settings = settings && JSON.parse(settings);
+    facebookAccounts = JSON.parse(facebookAccounts);
+
+    await this.setState({
+      connected: true,
+      facebookAccounts,
+      currentAccount,
+      settings: settings || this.state.settings,
+      user,
     });
-    this._facebookClient = clients.rest;
-    if (!this.state.currentAccount.screen_name) {
-      this.getCurrentAccountInfo();
-    }*/
+
+    if (user != null) {
+      this.updateSettings();
+    }
   }
 
-  signIn = () => {
-    LoginManager.logInWithPublishPermissions(['manage_pages', 'publish_pages'])
-    .then(async (result) => {
-      if (!result.isCancelled) {
-        const token = await AccessToken.getCurrentAccessToken();
-        await this.getAccountForToken(token);
-        this.setState({ currentAccount: token });
-      }
-    },
-    (error) => {
-      console.log(error);
-    });
-  }
-
-  getAccountForToken = async (token) => {
-    const infoRequest = new GraphRequest(
-      '/me',
-      null,
-      (error, result) => {
-        if (!error) {
-          const currentAccount = { ...token, ...result };
-          const facebookAccounts = [...this.state.facebookAccounts, currentAccount];
-          this.setState({ currentAccount, facebookAccounts });
-          this.storeAccounts(facebookAccounts, currentAccount);
-        }
+  updateSettings = async () => {
+    let response = await fetch(`http://localhost:3000/api/social/accounts/${this.state.currentAccount.accountId}/settings`, {
+      headers: {
+        Authorization: `jwt ${this.state.user.token}`,
       },
-    );
-    new GraphRequestManager().addRequest(infoRequest).start();
-  }
+    });
 
-  storeAccounts = async (facebookAccounts, currentAccount) => {
-    const accountsPromise = AsyncStorage.setItem('accounts:facebook', JSON.stringify(facebookAccounts));
-    const currentAccountPromise = AsyncStorage.setItem('currentAccount:facebook', JSON.stringify(currentAccount));
-    return Promise.all(accountsPromise, currentAccountPromise);
+    response = await response.json();
+
+    this.setState({
+      settings: {
+        ...this.state.settings,
+        ...response.settings,
+      },
+    });
   }
 
   searchTextChange = (text) => {
@@ -116,27 +94,45 @@ export default class Facebook extends Component {
     });
   }
 
-  updateReviewsRatingThreshold = (ratingThreshold) => {
+  updateReviewsRatingThreshold = async (ratingThreshold) => {
     const { settings } = this.state;
     if (!ratingThreshold) {
       settings.autoLikeReviews = { on: false, value: null };
-      this.setState({ settings, modalVisible: false });
+      await this.setState({ settings, modalVisible: false });
     } else {
       settings.autoLikeReviews = { on: true, value: ratingThreshold };
-      this.setState({ settings, modalVisible: false });
+      await this.setState({ settings, modalVisible: false });
     }
+
+    this.saveSettings();
   }
 
-  updateCriteriaSetting = (setting, value) => {
+  updateCriteriaSetting = async (setting, value) => {
     const { settings } = this.state;
     if (!value) {
       settings[setting] = { on: false, value: null };
-      this.setState({ settings, modalVisible: false });
+      await this.setState({ settings, modalVisible: false });
     } else {
       settings[setting] = { on: true, value };
-      this.setState({ settings, modalVisible: false });
+      await this.setState({ settings, modalVisible: false });
     }
+    this.saveSettings();
   };
+
+  saveSettings = async () => {
+    const { id, ...sett } = this.state.settings;
+    let response = await fetch(`http://localhost:3000/api/social/accounts/${this.state.currentAccount.accountId}/settings`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `jwt ${this.state.user.token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ settings: sett }),
+    });
+
+    response = await response.json();
+    await AsyncStorage.setItem('settings:facebook', JSON.stringify({ ...sett, id: response }));
+  }
 
   render() {
     const { currentAccount, view, modalVisible, modalView, settings } = this.state;
@@ -146,26 +142,23 @@ export default class Facebook extends Component {
         <Header
           title="Facebook"
           titleSize={36}
-          subtext={views[view.name].description}
-          connect={view.name === views.Home.name ? this.signIn : null}
+          subtext={currentAccount ? views[view.name].description : 'Go to settings to add a Facebook account.'}
           account={currentAccount ? { name: currentAccount.name } : null}
-          switchAccounts={() => {
-            this._navigator._navigation.navigate('SwitchAccounts');
-          }}
-          navigate={view.name === 'SwitchAccounts' ? () => this._navigator._navigation.goBack() : () => this.props.navigation.navigate('DrawerOpen')}
-          showMenu={view.name === 'SwitchAccounts'}
+          navigate={() => this.props.navigation.navigate('DrawerOpen')}
           ref={(ref) => { this.header = ref; }}
         />
-        <FacebookApp
-          ref={(ref) => { this._navigator = ref; }}
-          onNavigationStateChange={this.navigationStateChange}
-          screenProps={{
-            showModal: (content) => { this.setState({ modalVisible: true, modalView: content }); },
-            updateRating: this.updateReviewsRatingThreshold,
-            settings,
-            updateCriteria: this.updateCriteriaSetting,
-          }}
-        />
+        {currentAccount ?
+          <FacebookApp
+            ref={(ref) => { this._navigator = ref; }}
+            onNavigationStateChange={this.navigationStateChange}
+            screenProps={{
+              showModal: (content) => { this.setState({ modalVisible: true, modalView: content }); },
+              updateRating: this.updateReviewsRatingThreshold,
+              settings,
+              updateCriteria: this.updateCriteriaSetting,
+            }}
+          /> : null
+        }
         <Modal
           visible={modalVisible}
           animationType="slide"
