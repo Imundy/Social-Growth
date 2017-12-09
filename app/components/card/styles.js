@@ -49,12 +49,12 @@ const styles = {
     borderColor: '#FFF',
     justifyContent: 'center',
     paddingHorizontal: 2,
-    on: {
-      backgroundColor: colors.blue,
-    },
-    off: {
-      backgroundColor: '#BBB',
-    },
+  },
+  toggleButtonContainerOn: {
+    backgroundColor: colors.blue,
+  },
+  toggleButtonContainerOff: {
+    backgroundColor: '#BBB',
   },
   toggleButton: {
     width: 16,

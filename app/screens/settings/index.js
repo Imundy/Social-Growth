@@ -9,12 +9,15 @@ import {
   View,
   WebView,
 } from 'react-native';
-import { auth } from 'react-native-twitter';
+import twitter, { auth } from 'react-native-twitter';
 import SvgUri from 'react-native-svg-uri';
+import { LoginManager, AccessToken } from 'react-native-fbsdk';
+import { FacebookRequest } from '../util';
 import colors from '../../styles/colors';
 import config from '../../config';
 import { styles } from './styles.js';
 
+const fbRequest = new FacebookRequest();
 const windowWidth = Dimensions.get('window').width;
 
 export default class Settings extends Component {
@@ -25,22 +28,59 @@ export default class Settings extends Component {
 
   componentDidMount = async () => {
     let user = await AsyncStorage.getItem('user');
+
+    this.setupInstagram();
+    this.setupTwitter();
+    this.setupFacebook();
+
+    user = JSON.parse(user);
+    this.setState({
+      user,
+    });
+  }
+
+  setupTwitter = async () => {
+    let twitterAccounts = await AsyncStorage.getItem('accounts:twitter');
+    let current = await AsyncStorage.getItem('currentAccount:twitter');
+
+    twitterAccounts = twitterAccounts && JSON.parse(twitterAccounts);
+    current = current && JSON.parse(current);
+
+    this.setState({
+      twitterAccounts,
+      twitter: current,
+    });
+  }
+
+  setupFacebook = async () => {
+    let facebookAccounts = await AsyncStorage.getItem('accounts:facebook');
+    let facebook = await AsyncStorage.getItem('currentAccount:facebook');
+    if (facebook == null && facebookAccounts == null) {
+      return;
+    }
+
+    facebook = facebook && JSON.parse(facebook);
+    facebookAccounts = facebookAccounts && JSON.parse(facebookAccounts);
+
+    if (facebook != null && facebook.profileImage != null) {
+      const user = await fbRequest.userProfile();
+      facebook = { ...facebook, profileImage: user.picture.data.url, displayName: user.name };
+      await AsyncStorage.setItem('currentAccount:facebook', JSON.stringify(facebook));
+      await AsyncStorage.setItem('accounts:facebook', JSON.stringify([...facebookAccounts.filter(x => x.id === facebook.id.toString()), facebook]));
+    }
+
+    this.setState({
+      facebook,
+      facebookAccounts,
+    });
+  }
+
+  setupInstagram = async () => {
     let instagram = await AsyncStorage.getItem('currentAccount:instagram');
     let instagramAccounts = await AsyncStorage.getItem('accounts:instagram');
-    let twitterAccounts = await AsyncStorage.getItem('accounts:twitter');
-    let twitter = await AsyncStorage.getItem('currentAccount:twitter');
 
     instagramAccounts = instagramAccounts && JSON.parse(instagramAccounts);
     instagram = instagram && JSON.parse(instagram);
-    twitterAccounts = twitterAccounts && JSON.parse(twitterAccounts);
-    if (twitterAccounts != null) {
-      twitterAccounts = twitterAccounts.map(account => ({
-        ...account,
-        id: account.id,
-        profileImage: account.profile_image_url_https,
-        displayName: account.name,
-      }));
-    }
 
     if (instagramAccounts != null) {
       instagramAccounts = instagramAccounts.map(account => ({
@@ -51,15 +91,9 @@ export default class Settings extends Component {
       }));
     }
 
-    twitter = twitter && JSON.parse(twitter);
-    user = JSON.parse(user);
-
     this.setState({
-      user,
       instagram,
       instagramAccounts,
-      twitterAccounts,
-      twitter,
     });
   }
 
@@ -87,6 +121,8 @@ export default class Settings extends Component {
     try {
       await AsyncStorage.removeItem('currentAccount:twitter');
       await AsyncStorage.removeItem('currentAccount:instagram');
+      await AsyncStorage.removeItem('currentAccount:facebook');
+      await AsyncStorage.removeItem('accounts:facebook');
       await AsyncStorage.removeItem('accounts:instagram');
       await AsyncStorage.removeItem('accounts:twitter');
       await AsyncStorage.removeItem('user');
@@ -96,20 +132,46 @@ export default class Settings extends Component {
     }
   }
 
+  addFacebookAccount = async () => {
+    const result = await LoginManager.logInWithPublishPermissions(['manage_pages', 'publish_pages']);
+    const { facebookAccounts } = this.state;
+
+    if (!result.isCancelled) {
+      const token = await AccessToken.getCurrentAccessToken();
+      const user = await fbRequest.userProfile();
+      const newAccount = { ...user, accessToken: token.accessToken, profileImage: user.picture.data.url, displayName: user.name, tokens: [token.accessToken] };
+      await AsyncStorage.setItem('currentAccount:facebook', JSON.stringify(newAccount));
+      await AsyncStorage.setItem('accounts:facebook', JSON.stringify([...(facebookAccounts || []).filter(x => x.id === newAccount.id.toString()), newAccount]));
+      await this.storeAccounts(newAccount, 'facebook');
+    }
+  }
+
   addTwitterAccount = async () => {
     try {
       let twitterResponse = await auth(
           { consumerKey: config.twitterConsumerToken, consumerSecret: config.twitterConsumerSecret },
           'socialauth://twitter',
       );
+
       twitterResponse = {
         ...twitterResponse,
         id: twitterResponse.id,
-        profileImage: twitterResponse.profile_image_url_https,
-        displayName: twitterResponse.name,
+        tokens: [
+          twitterResponse.accessToken,
+          twitterResponse.accessTokenSecret,
+        ],
       };
-      await this.storeAccounts(twitterResponse, 'twitter');
-      this.props.navigation.navigate('Twitter');
+
+      const clients = twitter({
+        consumerKey: config.twitterConsumerToken,
+        consumerSecret: config.twitterConsumerSecret,
+        accessToken: twitterResponse.accessToken,
+        accessTokenSecret: twitterResponse.accessTokenSecret,
+      });
+
+      const currentAccountInfo = await clients.rest.get('users/lookup', { user_id: twitterResponse.id, stringify_ids: true });
+
+      await this.storeAccounts({ ...twitterResponse, displayName: currentAccountInfo[0].name, profileImage: currentAccountInfo[0].profile_image_url_https }, 'twitter');
     } catch (error) {
       console.warn(error);
     }
@@ -125,6 +187,7 @@ export default class Settings extends Component {
         id: me.data.id,
         profileImage: me.data.profile_picture,
         displayName: me.data.full_name,
+        tokens: [accessToken],
       };
 
       if (instagramAccounts && instagramAccounts.find(account => account.id === newAccount.id)) {
@@ -132,7 +195,6 @@ export default class Settings extends Component {
       }
 
       await this.storeAccounts(newAccount, 'instagram');
-      this.props.navigation.navigate('Instagram');
     } catch (error) {
       console.log(error);
     }
@@ -164,6 +226,11 @@ export default class Settings extends Component {
       this.setState({ [`${social}Accounts`]: accounts });
       if (this.state[social].id === accountId) {
         this.setState({ [social]: accounts.length !== 0 ? accounts[0] : null });
+        if (accounts.length !== 0) {
+          await AsyncStorage.setItem(`currentAccount:${social}`, accounts[0]);
+        } else {
+          await AsyncStorage.removeItem(`currentAccount:${social}`);
+        }
       }
     } catch (error) {
       console.log(error);
@@ -173,6 +240,11 @@ export default class Settings extends Component {
   storeAccounts = async (newAccount, social) => {
     try {
       const accounts = [...(this.state[`${social}Accounts`] || [])];
+
+      if (accounts.find(x => x.id === newAccount.id)) {
+        return;
+      }
+
       const response = await fetch('http://localhost:3000/api/social/accounts/add', {
         method: 'POST',
         headers: {
@@ -181,7 +253,7 @@ export default class Settings extends Component {
         },
         body: JSON.stringify({
           userId: this.state.user.userId,
-          tokens: newAccount.tokens || [newAccount.accessToken],
+          tokens: newAccount.tokens,
           type: social,
           socialAccountId: newAccount.id,
         }),
@@ -196,7 +268,7 @@ export default class Settings extends Component {
       }
 
       await AsyncStorage.setItem(`accounts:${social}`, JSON.stringify(accounts));
-      await AsyncStorage.setItem(`currentAccount:${social}`, JSON.stringify(newAccount));
+      await AsyncStorage.setItem(`currentAccount:${social}`, JSON.stringify(resultAccount));
       this.setState({
         [`${social}Accounts`]: accounts,
         [social]: newAccount,
@@ -311,12 +383,14 @@ export default class Settings extends Component {
         <View style={{ paddingTop: 20, paddingHorizontal: 20 }}>
           <View style={styles.sectionHeader}>
             <Text style={styles.title}>Facebook</Text>
-            <TouchableOpacity style={styles.addAccount}><Text style={{ color: colors.blue }}>+ Add account</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.addAccount} onPress={this.addFacebookAccount}><Text style={{ color: colors.blue }}>+ Add account</Text></TouchableOpacity>
           </View>
-          {(!this.state.facebookAccounts || this.state.facebookAccounts.length === 0) &&
+          {(!this.state.facebookAccounts || this.state.facebookAccounts.length === 0) ?
             <View style={styles.row}>
               <Text style={{ fontSize: 16, color: colors.darkGrey, padding: 12 }}>No Facebook accounts</Text>
-            </View>
+            </View> :
+            this.state.facebookAccounts.map(account =>
+              <Account key={`instagram-${account.id}`} removeAccount={this.removeAccount} social="facebook" account={account} selectAccount={this.selectFacebook} selectedAccountId={this.state.facebook.id} />)
           }
         </View>
       </ScrollView>

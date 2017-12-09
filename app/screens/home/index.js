@@ -7,9 +7,13 @@ import {
   View,
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
+import twitter from 'react-native-twitter';
+import { FacebookRequest } from '../util';
+import config from '../../config';
 import colors from '../../styles/colors';
 import styles from './styles';
-import twitter from 'react-native-twitter';
+
+const fbRequest = new FacebookRequest();
 
 Animatable.initializeRegistryWithDefinitions({
   errorAnimation: {
@@ -50,27 +54,46 @@ export default class Home extends Component {
   }
 
   storeAccounts = async ({ accounts }) => {
-    await Promise.all(accounts.map(async (account) => {
-      if (account.type === 'instagram') {
+    let insta = accounts.filter(account => account.type === 'instagram');
+    if (insta.length !== 0) {
+      insta = await Promise.all(insta.map(async (account) => {
         const me = await fetch(`https://api.instagram.com/v1/users/self/?access_token=${account.tokens[0]}`).then(response => response.json());
-        let instagramAccounts = await AsyncStorage.getItem('accounts:instagram') || '[]';
-        instagramAccounts = JSON.parse(instagramAccounts);
-        const currentAccount = { ...me.data, accessToken: account.tokens[0] };
-        instagramAccounts.push(currentAccount);
-        const promises = [];
+        return { ...me.data, accessToken: account.tokens[0] };
+      }));
+      await AsyncStorage.setItem('accounts:instagram', JSON.stringify(insta));
+      await AsyncStorage.setItem('currentAccount:instagram', JSON.stringify(insta[0]));
+    }
 
-        promises.push(AsyncStorage.setItem('currentAccount:instagram', JSON.stringify(currentAccount)));
-        promises.push(AsyncStorage.setItem('accounts:instagram', JSON.stringify(instagramAccounts)));
-        return Promise.all(promises);
-      } else if (account.type === 'twitter') {
-        let twitterAccounts = await AsyncStorage.getItem('accounts:twitter') || '[]';
-        twitterAccounts = JSON.parse(twitterAccounts);
-        twitterAccounts.push({ id: account.socialAccountId, accountId: account.id });
-        const accountsPromise = AsyncStorage.setItem('accounts:twitter', JSON.stringify(twitterAccounts));
-        const currentAccountPromise = AsyncStorage.setItem('currentAccount:twitter', JSON.stringify({ id: account.socialAccountId, accountId: account.id }));
-        return Promise.all(accountsPromise, currentAccountPromise);
-      }
-    }));
+    let twitterAccounts = accounts.filter(account => account.type === 'twitter');
+    if (twitterAccounts.length !== 0) {
+      twitterAccounts = await Promise.all(twitterAccounts.map(async (account) => {
+        const clients = twitter({
+          consumerKey: config.twitterConsumerToken,
+          consumerSecret: config.twitterConsumerSecret,
+          accessToken: account.tokens[0],
+          accessTokenSecret: account.tokens[1],
+        });
+
+        const currentAccountInfo = await clients.rest.get('users/lookup', { user_id: account.socialAccountId, stringify_ids: true });
+
+        return { displayName: currentAccountInfo[0].name, profileImage: currentAccountInfo[0].profile_image_url_https, id: account.socialAccountId, accountId: account.id };
+      }));
+
+      await AsyncStorage.setItem('accounts:twitter', JSON.stringify(twitterAccounts));
+      await AsyncStorage.setItem('currentAccount:twitter', JSON.stringify(twitterAccounts[0]));
+    }
+
+    let facebookAccounts = accounts.filter(account => account.type === 'facebook');
+    if (facebookAccounts.length !== 0) {
+      facebookAccounts = await Promise.all(facebookAccounts.map(async (account) => {
+        const user = await fbRequest.userProfile(account.tokens[0]);
+        return { ...account, profileImage: user.picture.data.url, displayName: user.name, accountId: 4 };
+      }));
+
+
+      await AsyncStorage.setItem('accounts:facebook', JSON.stringify(facebookAccounts));
+      await AsyncStorage.setItem('currentAccount:facebook', JSON.stringify(facebookAccounts[0]));
+    }
   }
 
   signIn = async () => {

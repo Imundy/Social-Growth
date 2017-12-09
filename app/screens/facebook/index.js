@@ -99,8 +99,8 @@ export default class Facebook extends Component {
   }
 
   storeAccounts = async (facebookAccounts, currentAccount) => {
-    const accountsPromise = AsyncStorage.setItem('facebookAccounts', JSON.stringify(facebookAccounts));
-    const currentAccountPromise = AsyncStorage.setItem('currentfacebookAccount', JSON.stringify(currentAccount));
+    const accountsPromise = AsyncStorage.setItem('accounts:facebook', JSON.stringify(facebookAccounts));
+    const currentAccountPromise = AsyncStorage.setItem('currentAccount:facebook', JSON.stringify(currentAccount));
     return Promise.all(accountsPromise, currentAccountPromise);
   }
 
@@ -170,7 +170,7 @@ export default class Facebook extends Component {
           visible={modalVisible}
           animationType="slide"
           transparent
-        >  
+        >
           <View
             style={{
               justifyContent: 'center',
@@ -255,7 +255,7 @@ const AutoLikeReview = ({ updateRating }) => (
     <TouchableOpacity style={styles.autoLikeReview.button} onPress={() => updateRating(null)}>
       <Text style={styles.autoLikeReview.text}>Off</Text>
     </TouchableOpacity>
-    {[ 1, 2, 3, 4, 5 ].map(rating => (
+    {[1, 2, 3, 4, 5].map(rating => (
       <TouchableOpacity key={rating} style={styles.autoLikeReview.button} onPress={() => updateRating(rating)}>
         <Text style={styles.autoLikeReview.text}>{`${rating} star${rating > 1 ? 's' : ''}`}</Text>
       </TouchableOpacity>
