@@ -7,7 +7,7 @@ import { LoginManager, AccessToken, GraphRequest, GraphRequestManager } from 're
 import Header from '../../components/header';
 import Card from '../../components/card';
 import SwitchAccounts from '../../components/switch-accounts';
-import urls from '../../urls';
+import simplyGrowClient from '../../clients/simply-grow-client';
 import colors from '../../styles/colors';
 import styles from './styles';
 
@@ -67,10 +67,9 @@ export default class Facebook extends Component {
   }
 
   updateSettings = async () => {
-    let response = await fetch(`${urls.simplygrow}/api/social/accounts/${this.state.currentAccount.accountId}/settings`, {
-      headers: {
-        Authorization: `jwt ${this.state.user.token}`,
-      },
+    let response = await simplyGrowClient.getAccountSettings({
+      accountId: this.state.currentAccount.accountId,
+      jwt: this.state.user.token,
     });
 
     response = await response.json();
@@ -122,13 +121,10 @@ export default class Facebook extends Component {
 
   saveSettings = async () => {
     const { id, ...sett } = this.state.settings;
-    let response = await fetch(`${urls.simplygrow}/api/social/accounts/${this.state.currentAccount.accountId}/settings`, {
-      method: 'PUT',
-      headers: {
-        Authorization: `jwt ${this.state.user.token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ settings: sett }),
+    let response = await simplyGrowClient.updateAccountSettings({
+      accountId: this.state.currentAccount.accountId,
+      settings: sett,
+      jwt: this.state.user.token,
     });
 
     response = await response.json();

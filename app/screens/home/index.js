@@ -9,7 +9,7 @@ import {
 import * as Animatable from 'react-native-animatable';
 import twitter from 'react-native-twitter';
 import { FacebookRequest } from '../util';
-import urls from '../../urls';
+import simplyGrowClient from '../../clients/simply-grow-client';
 import config from '../../config';
 import colors from '../../styles/colors';
 import styles from './styles';
@@ -107,15 +107,9 @@ export default class Home extends Component {
     });
 
     try {
-      const response = await fetch(`${urls.simplygrow}/api/users/signin`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: this.state.email,
-          password: this.state.password,
-        }),
+      const response = await simplyGrowClient.signIn({
+        email: this.state.email,
+        password: this.state.password,
       });
 
       if (response.status === 404 || response.status === 401) {
@@ -128,7 +122,7 @@ export default class Home extends Component {
 
       const user = await response.json();
 
-      let accounts = await fetch(`${urls.simplygrow}/api/social/accounts`, { headers: { Authorization: `jwt ${user.token}` } });
+      let accounts = await simplyGrowClient.getAccounts({ jwt: user.token });
       accounts = await accounts.json();
       await this.storeAccounts(accounts);
 
@@ -149,15 +143,9 @@ export default class Home extends Component {
     });
 
     try {
-      const response = await fetch(`${urls.simplygrow}/api/users/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: this.state.email,
-          password: this.state.password,
-        }),
+      const response = await simplyGrowClient.register({
+        email: this.state.email,
+        password: this.state.password,
       });
 
       if (response.status === 400) {

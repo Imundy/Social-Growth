@@ -36,7 +36,7 @@ const simplyGrowClient = {
       }),
     });
   },
-  getAccountsSettings: ({ accountId, jwt }) => {
+  getAccountSettings: ({ accountId, jwt }) => {
     return fetch(`${urls.simplygrow}/api/social/accounts/${accountId}/settings`, {
       headers: {
         Authorization: `jwt ${jwt}`,
@@ -76,7 +76,7 @@ const simplyGrowClient = {
         password,
       }),
     });
-  }
+  },
 };
 
 export default simplyGrowClient;

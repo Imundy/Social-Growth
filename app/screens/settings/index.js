@@ -15,7 +15,7 @@ import { LoginManager, AccessToken } from 'react-native-fbsdk';
 import { FacebookRequest } from '../util';
 import colors from '../../styles/colors';
 import config from '../../config';
-import urls from '../../urls';
+import simplyGrowClient from '../../clients/simply-grow-client';
 import { styles } from './styles.js';
 
 const fbRequest = new FacebookRequest();
@@ -209,16 +209,10 @@ export default class Settings extends Component {
       const account = accounts.find(acc => acc.id === accountId);
       accounts = accounts.filter(acc => acc.id !== accountId);
 
-      const response = await fetch(`${urls.simplygrow}/api/social/accounts/remove`, {
-        method: 'POST',
-        headers: {
-          Authorization: `jwt ${this.state.user.token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: this.state.user.userId,
-          accountId: account.accountId,
-        }),
+      const response = await simplyGrowClient.removeAccount({
+        jwt: this.state.user.token,
+        userId: this.state.user.userId,
+        accountId: account.accountId,
       });
 
       if (response.status < 200 || response.status >= 300) {
@@ -248,18 +242,11 @@ export default class Settings extends Component {
         return;
       }
 
-      const response = await fetch(`${urls.simplygrow}/api/social/accounts/add`, {
-        method: 'POST',
-        headers: {
-          Authorization: `jwt ${this.state.user.token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: this.state.user.userId,
-          tokens: newAccount.tokens,
-          type: social,
-          socialAccountId: newAccount.id,
-        }),
+      const response = await simplyGrowClient.addACcount({
+        jwt: this.state.user.token,
+        userId: this.state.user.userId,
+        type: social,
+        socialAccountId: newAccount.id,
       });
 
       const { accountId } = await response.json();
