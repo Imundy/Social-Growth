@@ -107,7 +107,7 @@ export default class Home extends Component {
     });
 
     try {
-      const response = await fetch(`${urls.simplygrow}api/users/signin`, {
+      const response = await fetch(`${urls.simplygrow}/api/users/signin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
