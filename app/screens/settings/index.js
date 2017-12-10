@@ -15,6 +15,7 @@ import { LoginManager, AccessToken } from 'react-native-fbsdk';
 import { FacebookRequest } from '../util';
 import colors from '../../styles/colors';
 import config from '../../config';
+import urls from '../../urls';
 import { styles } from './styles.js';
 
 const fbRequest = new FacebookRequest();
@@ -208,7 +209,7 @@ export default class Settings extends Component {
       const account = accounts.find(acc => acc.id === accountId);
       accounts = accounts.filter(acc => acc.id !== accountId);
 
-      const response = await fetch('http://localhost:3000/api/social/accounts/remove', {
+      const response = await fetch(`${urls.simplygrow}/api/social/accounts/remove`, {
         method: 'POST',
         headers: {
           Authorization: `jwt ${this.state.user.token}`,
@@ -247,7 +248,7 @@ export default class Settings extends Component {
         return;
       }
 
-      const response = await fetch('http://localhost:3000/api/social/accounts/add', {
+      const response = await fetch(`${urls.simplygrow}/api/social/accounts/add`, {
         method: 'POST',
         headers: {
           Authorization: `jwt ${this.state.user.token}`,

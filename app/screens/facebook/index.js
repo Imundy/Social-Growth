@@ -7,6 +7,7 @@ import { LoginManager, AccessToken, GraphRequest, GraphRequestManager } from 're
 import Header from '../../components/header';
 import Card from '../../components/card';
 import SwitchAccounts from '../../components/switch-accounts';
+import urls from '../../urls';
 import colors from '../../styles/colors';
 import styles from './styles';
 
@@ -66,7 +67,7 @@ export default class Facebook extends Component {
   }
 
   updateSettings = async () => {
-    let response = await fetch(`http://localhost:3000/api/social/accounts/${this.state.currentAccount.accountId}/settings`, {
+    let response = await fetch(`${urls.simplygrow}/api/social/accounts/${this.state.currentAccount.accountId}/settings`, {
       headers: {
         Authorization: `jwt ${this.state.user.token}`,
       },
@@ -121,7 +122,7 @@ export default class Facebook extends Component {
 
   saveSettings = async () => {
     const { id, ...sett } = this.state.settings;
-    let response = await fetch(`http://localhost:3000/api/social/accounts/${this.state.currentAccount.accountId}/settings`, {
+    let response = await fetch(`${urls.simplygrow}/api/social/accounts/${this.state.currentAccount.accountId}/settings`, {
       method: 'PUT',
       headers: {
         Authorization: `jwt ${this.state.user.token}`,

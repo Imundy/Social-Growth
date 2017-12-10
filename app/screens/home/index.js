@@ -9,6 +9,7 @@ import {
 import * as Animatable from 'react-native-animatable';
 import twitter from 'react-native-twitter';
 import { FacebookRequest } from '../util';
+import urls from '../../urls';
 import config from '../../config';
 import colors from '../../styles/colors';
 import styles from './styles';
@@ -106,7 +107,7 @@ export default class Home extends Component {
     });
 
     try {
-      const response = await fetch('http://localhost:3000/api/users/signin', {
+      const response = await fetch(`${urls.simplygrow}api/users/signin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,7 +128,7 @@ export default class Home extends Component {
 
       const user = await response.json();
 
-      let accounts = await fetch('http://localhost:3000/api/social/accounts', { headers: { Authorization: `jwt ${user.token}` } });
+      let accounts = await fetch(`${urls.simplygrow}/api/social/accounts`, { headers: { Authorization: `jwt ${user.token}` } });
       accounts = await accounts.json();
       await this.storeAccounts(accounts);
 
@@ -148,7 +149,7 @@ export default class Home extends Component {
     });
 
     try {
-      const response = await fetch('http://localhost:3000/api/users/register', {
+      const response = await fetch(`${urls.simplygrow}/api/users/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
