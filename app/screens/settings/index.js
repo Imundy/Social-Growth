@@ -136,7 +136,7 @@ export default class Settings extends Component {
   addFacebookAccount = async () => {
     await LoginManager.setLoginBehavior('web');
     await LoginManager.logOut();
-    const result = await LoginManager.logInWithPublishPermissions(['manage_pages', 'publish_pages']);
+    const result = await LoginManager.logInWithPublishPermissions(['manage_pages', 'publish_pages', 'publish_actions']);
     const { facebookAccounts } = this.state;
 
     if (!result.isCancelled) {
