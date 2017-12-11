@@ -1,4 +1,5 @@
 <resources>
 
-    <string name="app_name">socialgrowth</string>
+    <string name="app_name">Simply Grow</string>
+    <string name="facebook_app_id">1586270334794438</string>
 </resources>
