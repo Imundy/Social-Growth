@@ -1,15 +1,28 @@
 import React, { Component, PureComponent } from 'react';
-import { ScrollView, View, Modal, Text, TextInput, TouchableOpacity, AsyncStorage, Dimensions } from 'react-native';
+import {
+  AsyncStorage,
+  Dimensions,
+  FlatList,
+  Image,
+  Modal,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import SvgUri from 'react-native-svg-uri';
-import { LoginManager, AccessToken, GraphRequest, GraphRequestManager } from 'react-native-fbsdk';
 
+import { FacebookRequest } from '../util';
 import Header from '../../components/header';
 import Card from '../../components/card';
-import SwitchAccounts from '../../components/switch-accounts';
 import simplyGrowClient from '../../clients/simply-grow-client';
+import urls from '../../urls';
 import colors from '../../styles/colors';
 import styles from './styles';
+
+const facebookRequest = new FacebookRequest();
 
 export default class Facebook extends Component {
   static navigationOptions = {
@@ -43,6 +56,7 @@ export default class Facebook extends Component {
 
   componentDidMount = async () => {
     let facebookAccounts = await AsyncStorage.getItem('accounts:facebook');
+    this.header.transitionHeader(60);
 
     let currentAccount = await AsyncStorage.getItem('currentAccount:facebook');
     let settings = await AsyncStorage.getItem('settings:facebook');
@@ -63,6 +77,7 @@ export default class Facebook extends Component {
 
     if (user != null) {
       this.updateSettings();
+      this.updatePages();
     }
   }
 
@@ -72,7 +87,11 @@ export default class Facebook extends Component {
       jwt: this.state.user.token,
     });
 
+    const { status } = response;
     response = await response.json();
+    if (response == null && status === 200) {
+      return;
+    }
 
     this.setState({
       settings: {
@@ -82,12 +101,48 @@ export default class Facebook extends Component {
     });
   }
 
+  updatePages = async () => {
+    let response;
+    let selected = await AsyncStorage.getItem('pages:facebook');
+    selected = selected && JSON.parse(selected);
+
+    try {
+      response = await fetch(`${urls.simplygrow}/api/social/accounts/${this.state.currentAccount.accountId}/pages`, {
+        headers: {
+          Authorization: `jwt ${this.state.user.token}`,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+
+    let pages = await facebookRequest.pages(this.state.currentAccount.tokens[0]);
+    const { status } = response;
+    response = await response.json();
+
+    console.log(response);
+    if (status >= 200 && status < 300) {
+      selected = selected != null ? selected.concat(response) : response;
+    } else {
+      selected = [];
+    }
+
+    pages = pages.map(page => ({ ...page, isSelected: selected.find(p => p.page_id === page.id) != null }));
+    this.setState({
+      pages,
+    });
+  }
+
   searchTextChange = (text) => {
     this.setState({ searchText: text });
   }
 
   navigationStateChange = (prevState, currentState) => {
     this.view = views[currentState.routes[currentState.index].routeName];
+    if (views[currentState.routes[currentState.index].routeName].name === 'Manage') {
+      this.header.transitionHeader(-20);
+    }
 
     this.setState({
       view: views[currentState.routes[currentState.index].routeName],
@@ -131,6 +186,31 @@ export default class Facebook extends Component {
     await AsyncStorage.setItem('settings:facebook', JSON.stringify({ ...sett, id: response }));
   }
 
+  addPage = async (pageId) => {
+    let response;
+    try {
+      response = await fetch(`${urls.simplygrow}/api/social/accounts/${this.state.currentAccount.accountId}/pages?pageId=${pageId}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `jwt ${this.state.user.token}`,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+
+    const { status } = response;
+    if (status < 200 || status >= 300) {
+      console.log('Failed request');
+      return;
+    }
+
+    this.setState({
+      pages: this.state.pages.map(page => ({ ...page, isSelected: page.id === pageId || page.isSelected })),
+    });
+  }
+
   render() {
     const { currentAccount, view, modalVisible, modalView, settings } = this.state;
 
@@ -141,7 +221,9 @@ export default class Facebook extends Component {
           titleSize={36}
           subtext={currentAccount ? views[view.name].description : 'Go to settings to add a Facebook account.'}
           account={currentAccount ? { name: currentAccount.name } : null}
-          navigate={() => this.props.navigation.navigate('DrawerOpen')}
+          showMenu={view.name === 'Manage'}
+          connect={() => { this._navigator._navigation.navigate('Manage'); }}
+          navigate={view.name === 'Manage' ? () => this._navigator._navigation.goBack() : () => this.props.navigation.navigate('DrawerOpen')}
           ref={(ref) => { this.header = ref; }}
         />
         {currentAccount ?
@@ -153,6 +235,8 @@ export default class Facebook extends Component {
               updateRating: this.updateReviewsRatingThreshold,
               settings,
               updateCriteria: this.updateCriteriaSetting,
+              addPage: this.addPage,
+              pages: this.state.pages,
             }}
           /> : null
         }
@@ -284,12 +368,39 @@ class UpdateCriteria extends PureComponent {
   }
 }
 
+const renderPage = (page, addPage) => (
+  <TouchableOpacity style={styles.pageResult} onPress={() => addPage(page.id)}>
+    <Image
+      style={styles.profilePicture}
+      source={{ uri: page.picture.data.url }}
+    />
+    <View style={styles.profileInfo}>
+      <View style={styles.nameContainer}>
+        {page.isSelected ? <SvgUri source={require('../../icons/svg/blue-verified-check.svg')} height="16" width="16" /> : null}
+        <Text style={styles.profileName}>{page.name}</Text>
+      </View>
+    </View>
+  </TouchableOpacity>
+);
+
+const ManagePages = ({ screenProps }) => (
+  <View style={styles.cardContainer}>
+    <FlatList
+      contentContainerStyle={{ backgroundColor: 'white' }}
+      data={screenProps.pages}
+      keyExtractor={item => item.name}
+      renderItem={({ item }) => renderPage(item, screenProps.addPage)}
+      onEndReached={screenProps.loadMore}
+    />
+  </View>
+);
+
 const FacebookApp = new StackNavigator({
   Home: {
     screen: Cards,
   },
-  SwitchAccounts: {
-    screen: SwitchAccounts,
+  Manage: {
+    screen: ManagePages,
   },
 }, {
   headerMode: 'none',
@@ -315,6 +426,10 @@ const views = {
   SwitchAccounts: {
     name: 'SwitchAccounts',
     description: 'Select which account to use.',
+  },
+  Manage: {
+    name: 'Manage',
+    description: 'Choose which pages to manage.',
   },
 };
 

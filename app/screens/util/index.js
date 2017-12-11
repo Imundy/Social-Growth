@@ -22,4 +22,26 @@ export class FacebookRequest {
       new GraphRequestManager().addRequest(infoRequest).start();
     });
   }
+
+  pages(accessToken) {
+    return new Promise((resolve, reject) => {
+      const infoRequest = new GraphRequest(
+        '/me/accounts',
+        {
+          parameters: {
+            fields: { string: 'id,name,access_token,picture' },
+          },
+          accessToken,
+        },
+        (error, result) => {
+          if (error) {
+            return reject(error);
+          }
+          return resolve(result.data);
+        },
+      );
+
+      new GraphRequestManager().addRequest(infoRequest).start();
+    });
+  }
 }

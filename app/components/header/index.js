@@ -55,7 +55,7 @@ class Header extends Component {
         <Text style={{ fontWeight: '300', color: colors.lightBlue, fontSize: titleSize }}>{title}</Text>
         <Text style={{ fontWeight: '300', color: 'white', fontSize: 16, textAlign: 'center' }}>{subtext}</Text>
         {searchTextChange != null && search != null && renderSearch(searchTextChange, search)}
-        {connect && !account ? renderConnect(connect) : null}
+        {connect ? renderConnect(connect) : null}
         {account ? renderSwitchAccounts(account, switchAccounts) : null }
       </Animatable.View>
     );
@@ -78,7 +78,7 @@ Header.propTypes = {
 const renderConnect = connect => (
   <View style={styles.buttonContainer}>
     <TouchableOpacity style={styles.connectButton} onPress={connect}>
-      <Text style={{ color: 'white', fontWeight: 'bold' }}>Connect</Text>
+      <Text style={{ color: 'white', fontWeight: 'bold' }}>Manage</Text>
     </TouchableOpacity>
   </View>
 );

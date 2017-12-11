@@ -67,18 +67,20 @@ export default class Home extends Component {
 
     let twitterAccounts = accounts.filter(account => account.type === 'twitter');
     if (twitterAccounts.length !== 0) {
-      twitterAccounts = await Promise.all(twitterAccounts.map(async (account) => {
-        const clients = twitter({
-          consumerKey: config.twitterConsumerToken,
-          consumerSecret: config.twitterConsumerSecret,
-          accessToken: account.tokens[0],
-          accessTokenSecret: account.tokens[1],
-        });
+      const client = twitter({
+        consumerKey: config.twitterConsumerToken,
+        consumerSecret: config.twitterConsumerSecret,
+        accessToken: twitterAccounts[0].tokens[0],
+        accessTokenSecret: twitterAccounts[0].tokens[1],
+      });
 
-        const currentAccountInfo = await clients.rest.get('users/lookup', { user_id: account.socialAccountId, stringify_ids: true });
+      const userIds = twitterAccounts.map(x => x.socialAccountId).join(',');
+      const accountInfo = await client.rest.get('users/lookup', { user_id: userIds, stringify_ids: true });
 
-        return { displayName: currentAccountInfo[0].name, profileImage: currentAccountInfo[0].profile_image_url_https, id: account.socialAccountId, accountId: account.id };
-      }));
+      twitterAccounts = accountInfo.map((info) => {
+        const account = twitterAccounts.find(acc => acc.socialAccountId === info.id);
+        return { displayName: info.name, profileImage: info.profile_image_url_https, id: account.socialAccountId, accountId: account.id };
+      });
 
       await AsyncStorage.setItem('accounts:twitter', JSON.stringify(twitterAccounts));
       await AsyncStorage.setItem('currentAccount:twitter', JSON.stringify(twitterAccounts[0]));

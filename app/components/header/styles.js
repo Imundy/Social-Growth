@@ -7,7 +7,6 @@ const styles = {
     backgroundColor: colors.blue,
     justifyContent: 'center',
     paddingTop: 40,
-    paddingBottom: 20,
     shadowColor: 'rgba(0, 0, 0, 0.4)',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
@@ -28,6 +27,7 @@ const styles = {
     alignItems: 'flex-end',
     marginHorizontal: 20,
     marginTop: 20,
+    marginBottom: -20,
   },
   switchContainer: {
     alignSelf: 'stretch',

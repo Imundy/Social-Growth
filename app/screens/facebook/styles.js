@@ -76,6 +76,32 @@ const styles = {
       color: '#FFF',
     },
   },
+  profilePicture: {
+    height: 50,
+    width: 50,
+    borderRadius: 4,
+  },
+  profileInfo: {
+    flex: 4,
+    marginLeft: 16,
+  },
+  profileName: {
+    color: colors.blue,
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginLeft: 4,
+  },
+  nameContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  pageResult: {
+    flexDirection: 'row',
+    width: Dimensions.get('screen').width,
+    alignItems: 'center',
+    padding: 20,
+  },
 };
 
 export default styles;
