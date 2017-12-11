@@ -242,8 +242,9 @@ export default class Settings extends Component {
         return;
       }
 
-      const response = await simplyGrowClient.addACcount({
+      const response = await simplyGrowClient.addAccount({
         jwt: this.state.user.token,
+        tokens: newAccount.tokens,
         userId: this.state.user.userId,
         type: social,
         socialAccountId: newAccount.id,

@@ -91,7 +91,15 @@ const renderSwitchAccounts = account => (
 
 const renderSearch = (searchTextChange, search) => (
   <Animatable.View style={styles.searchContainer} animation="textInputAnimation" duration={200}>
-    <TextInput autoCorrect={false} autoCapitalize="none" style={styles.input} onChangeText={searchTextChange} placeholder="Search" placeholderTextColor="#999" onSubmitEditing={search} />
+    <TextInput
+      underlineColorAndroid="transparent"
+      autoCorrect={false} autoCapitalize="none"
+      style={styles.input}
+      onChangeText={searchTextChange}
+      placeholder="Search"
+      placeholderTextColor="#999"
+      onSubmitEditing={search}
+    />
     <TouchableOpacity style={styles.searchButton} onPress={search}>
       <SvgUri width="25" height="25" source={require('../../icons/svg/white-search-icon.svg')} />
     </TouchableOpacity>

@@ -201,6 +201,7 @@ export default class Home extends Component {
   renderSigninForm = () => (
     <Animatable.View style={styles.form} ref={(ref) => { this.form = ref; }}>
       <TextInput
+        underlineColorAndroid="transparent"
         style={styles.input}
         onChangeText={this.updateEmail}
         value={this.state.email}
@@ -211,6 +212,7 @@ export default class Home extends Component {
         placeholder="Email"
       />
       <TextInput
+        underlineColorAndroid="transparent"
         style={styles.input}
         onChangeText={this.updatePassword}
         onBlur={this.validatePassword}
@@ -225,6 +227,7 @@ export default class Home extends Component {
     <Animatable.View style={styles.form} ref={(ref) => { this.form = ref; }}>
       {this.state.emailError && <Animatable.Text animation="errorAnimation" duration={200} style={{ color: colors.red, fontSize: 14 }}>{this.state.emailError}</Animatable.Text>}
       <TextInput
+        underlineColorAndroid="transparent"
         style={styles.input}
         onChangeText={this.updateEmail}
         onBlur={this.validateEmail}
@@ -237,6 +240,7 @@ export default class Home extends Component {
       />
       {this.state.passwordError && <Animatable.Text animation="errorAnimation" duration={200} style={{ color: colors.red, fontSize: 14 }}>{this.state.passwordError}</Animatable.Text>}
       <TextInput
+        underlineColorAndroid="transparent"
         style={styles.input}
         onChangeText={this.updatePassword}
         onBlur={this.validatePassword}
@@ -245,6 +249,7 @@ export default class Home extends Component {
         placeholder="Password"
       />
       <TextInput
+        underlineColorAndroid="transparent"
         style={styles.input}
         onChangeText={this.updateConfirmation}
         onBlur={this.validateConfirmation}

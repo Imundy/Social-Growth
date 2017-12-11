@@ -8,7 +8,7 @@ const simplyGrowClient = {
       },
     });
   },
-  addACcount: ({ userId, tokens, type, socialAccountId, jwt }) => {
+  addAccount: ({ userId, tokens, type, socialAccountId, jwt }) => {
     return fetch(`${urls.simplygrow}/api/social/accounts/add`, {
       method: 'POST',
       headers: {

@@ -266,6 +266,7 @@ class UpdateCriteria extends PureComponent {
       <View style={styles.criteriaText.container}>
         <Text style={styles.criteriaText.instructions}>{settingsInstructions[setting]}</Text>
         <TextInput
+          underlineColorAndroid="transparent"
           style={styles.criteriaText.input}
           value={text}
           editable
