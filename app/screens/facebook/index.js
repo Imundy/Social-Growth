@@ -120,12 +120,12 @@ export default class Facebook extends Component {
     let pages = await facebookRequest.pages(this.state.currentAccount.tokens[0]);
     const { status } = response;
     response = await response.json();
+    await AsyncStorage.setItem('pages:facebook', response);
 
-    console.log(response);
     if (status >= 200 && status < 300) {
-      selected = selected != null ? selected.concat(response) : response;
+      selected = response;
     } else {
-      selected = [];
+      selected = selected && [];
     }
 
     pages = pages.map(page => ({ ...page, isSelected: selected.find(p => p.page_id === page.id) != null }));
