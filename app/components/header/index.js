@@ -55,7 +55,7 @@ class Header extends Component {
         <Text style={{ fontWeight: '300', color: colors.lightBlue, fontSize: titleSize }}>{title}</Text>
         <Text style={{ fontWeight: '300', color: 'white', fontSize: 16, textAlign: 'center' }}>{subtext}</Text>
         {searchTextChange != null && search != null && renderSearch(searchTextChange, search)}
-        {connect ? renderConnect(connect) : null}
+        {connect && !account ? renderConnect(connect) : null}
         {account ? renderSwitchAccounts(account, switchAccounts) : null }
       </Animatable.View>
     );
