@@ -9,6 +9,7 @@ import Card from '../../components/card';
 import SwitchAccounts from '../../components/switch-accounts';
 import UserSearch from './user-search';
 import UnfollowUsers from './unfollow-users';
+import WhitelistAccounts from './whitelist-accounts';
 import config from '../../config';
 import colors from '../../styles/colors';
 import styles from './styles';
@@ -130,20 +131,35 @@ export default class Twitter extends Component {
   }
 
   loadFriends = async () => {
+    const { nextFriendCursor, friendIds, twitterFriends, friendLookupIndex } = this.state;
+    if (friendLookupIndex < friendIds.length) {
+      const friendIdSet = friendIds.slice(friendLookupIndex, 100);
+      const lookupResponse = await this._twitterClient.post('users/lookup', { user_id: friendIdSet });
+      this.setState({ twitterFriends: [...twitterFriends, ...lookupResponse], friendLookupIndex: friendLookupIndex + 100 <= friendIds.length ? friendLookupIndex + 100 : friendIds.length });
+    } else {
+      const response = await this._twitterClient.get('friends/ids', { stringify_ids: true, cursor: nextFriendCursor });
+      const ids = [...response.ids];
+      const friendIdSet = ids.slice(0, 100);
+      const lookupResponse = await this._twitterClient.post('users/lookup', { user_id: friendIdSet });
+      this.setState({ friendIds: ids, twitterFriends: lookupResponse, nextFriendCursor: response.next_cursor, friendLookupIndex: 100 });
+    }
+  }
+
+  loadAllFriends = async () => {
     let response = await this._twitterClient.get('friends/ids', { stringify_ids: true });
     let ids = [...response.ids];
     while (response.next_cursor !== 0) {
-      response = await this._twitterClient.get('friends/ids', { stringify_ids: true, curso: response.next_cursor });
+      response = await this._twitterClient.get('friends/ids', { stringify_ids: true, cursor: response.next_cursor });
       ids = [...ids, ...response.ids];
     }
     return ids;
   }
 
-  loadFollowers = async () => {
+  loadAllFollowers = async () => {
     let response = await this._twitterClient.get('followers/ids', { stringify_ids: true });
     let ids = [...response.ids];
     while (response.next_cursor !== 0) {
-      response = await this._twitterClient.get('follwers/ids', { stringify_ids: true, curso: response.next_cursor });
+      response = await this._twitterClient.get('follwers/ids', { stringify_ids: true, cursor: response.next_cursor });
       ids = [...ids, ...response.ids];
     }
     return ids;
@@ -151,13 +167,11 @@ export default class Twitter extends Component {
 
   getNonFollowingUsers = async () => {
     this.setState({ loading: true });
-    let friendIds; // = await AsyncStorage.getItem('twitter friends');
-    let followerIds; // = await AsyncStorage.getItem('twitter followers');
+    let friendIds;
+    let followerIds;
     if (!friendIds || !followerIds) {
-      friendIds = await this.loadFriends();
-      followerIds = await this.loadFollowers();
-      // await AsyncStorage.setItem('twitter friends', JSON.stringify(friendIds));
-      // await AsyncStorage.setItem('twitter followers', JSON.stringify(followerIds));
+      friendIds = await this.loadAllFriends();
+      followerIds = await this.loadAllFollowers();
     } else {
       friendIds = JSON.parse(friendIds);
       followerIds = JSON.parse(followerIds);
@@ -221,6 +235,22 @@ export default class Twitter extends Component {
           selectedAccountId: this.state.currentAccount.id,
           addAccount: this.signIn,
           selectAccount: this.selectAccount,
+        };
+      case views.WhitelistAccounts.name:
+        return {
+          accounts: this.state.twitterFriends.map(account => ({
+            id: account.id,
+            profileImage: account.profile_image_url_https,
+            displayName: account.name,
+          })),
+          whitelistedAccounts: this.state.whitelistedTwitterFriends.map(account => ({
+            id: account.id,
+            profileImage: account.profile_image_url_https,
+            displayName: account.name,
+          })),
+          whitelistAccount: this.addAccountToWhitelist,
+          removeAccount: this.removeAccountFromWhitelist,
+          loadMoreAccounts: this.loadFriends,
         };
       case views.Home.name:
       default:
@@ -294,6 +324,9 @@ const TwitterApp = new StackNavigator({
   UnfollowUsers: {
     screen: UnfollowUsers,
   },
+  WhitelistAccounts: {
+    screen: WhitelistAccounts,
+  },
   SwitchAccounts: {
     screen: SwitchAccounts,
   },
@@ -318,5 +351,9 @@ const views = {
   SwitchAccounts: {
     name: 'SwitchAccounts',
     description: 'Select which account to use.',
+  },
+  WhitelistAccounts: {
+    name: 'WhitelistAccounts',
+    description: 'Select accounts to never unfollow',
   },
 };
