@@ -31,6 +31,7 @@ const mapTwitterUser = user => ({
   name: user.screen_name,
   displayName: user.name,
   followerCount: user.followers_count,
+  friendCount: user.friends_count,
   profileImage: user.profile_image_url_https,
   following: user.following,
   bio: user.description,

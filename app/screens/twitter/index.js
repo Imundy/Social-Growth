@@ -9,6 +9,7 @@ import Card from '../../components/card';
 import SwitchAccounts from '../../components/switch-accounts';
 import UserSearch from './user-search';
 import UnfollowUsers from './unfollow-users';
+import TweetSearch from './tweet-search';
 import config from '../../config';
 import colors from '../../styles/colors';
 import styles from './styles';
@@ -99,10 +100,7 @@ export default class Twitter extends Component {
 
   follow = async (id) => {
     await this._twitterClient.post('friendships/create', { user_id: id });
-    const { searchResults } = this.state;
-    const index = searchResults.findIndex(x => x.id === id);
-    searchResults[index].following = true;
-    this.setState({ searchResults });
+    this.updateFollowingState(id, true);
   }
 
   unfollow = async (id) => {
@@ -111,10 +109,26 @@ export default class Twitter extends Component {
     } catch (e) {
       console.log(e);
     }
-    const { nonFollowers } = this.state;
-    const index = nonFollowers.findIndex(x => x.id === id);
-    nonFollowers[index].following = false;
-    this.setState({ nonFollowers });
+    this.updateFollowingState(id, false);
+  }
+
+  updateFollowingState = (id, following) => {
+    this.setState((state) => {
+      const { searchResults, tweetResults, nonFollowers } = state;
+      if (searchResults) {
+        const searchIndex = searchResults.findIndex(x => x.id === id);
+        searchResults[searchIndex].following = following;
+      }
+      if (tweetResults) {
+        const tweetIndex = tweetResults.findIndex(x => x.id === id);
+        tweetResults[tweetIndex].user.following = following;
+      }
+      if (nonFollowers) {
+        const nonFollowersIndex = nonFollowers.findIndex(x => x.id === id);
+        nonFollowers[nonFollowersIndex].following = following;
+      }
+      return { searchResults, tweetResults, nonFollowers };
+    });
   }
 
   search = async () => {
@@ -127,6 +141,54 @@ export default class Twitter extends Component {
     const response = await this._twitterClient.get('users/search', { q: this.state.searchText, page: this.state.page + 1 });
     const hasMoreSearchResults = response.length === 20;
     this.setState(state => ({ searchResults: [...state.searchResults, ...response], hasMoreSearchResults, page: state.page + 1 }));
+  }
+
+  searchTweets = async () => {
+    const { searchText } = this.state;
+    const terms = searchText.split(',');
+    const query = terms.map((term) => {
+      term = term.trim();
+      if (term.indexOf(' ' !== -1)) {
+        term = `"${term}"`;
+      }
+      return term;
+    }).join(' OR ');
+    const response = await this._twitterClient.get('search/tweets', { q: query, count: 100 });
+    this.setState({ tweetResults: response.statuses, tweetPage: 1, hasMoreTweetResults: response.statuses.length === 100, tweetsQuery: query, tweetsTerms: terms });
+  }
+
+  loadMoreTweets = async () => {
+    const response = await this._twitterClient.get('search/tweets', { q: this.state.tweetsQuery, page: this.state.tweetPage + 1, count: 100 });
+    const hasMoreTweetResults = response.statuses.length === 100;
+    this.setState(state => ({ tweetResults: [...state.tweetResults, ...response.statuses], hasMoreTweetResults, tweetPage: state.tweetPage + 1 }));
+  }
+
+  toggleFavorite = async (id, favorited) => {
+    if (favorited) {
+      await this._twitterClient.post('favorites/destroy', { id });
+    } else {
+      await this._twitterClient.post('favorites/create', { id });
+    }
+    this.setState((state) => {
+      const { tweetResults } = state;
+      const index = tweetResults.findIndex(t => t.id == id);
+      tweetResults[index].favorited = !favorited;
+      return { tweetResults };
+    });
+  }
+
+  toggleRetweet = async (id, retweeted) => {
+    if (retweeted) {
+      await this._twitterClient.post(`statuses/unretweet/${id}`);
+    } else {
+      await this._twitterClient.post(`statuses/retweet/${id}`);
+    }
+    this.setState((state) => {
+      const { tweetResults } = state;
+      const index = tweetResults.findIndex(t => t.id == id);
+      tweetResults[index].retweeted = !retweeted;
+      return { tweetResults };
+    });
   }
 
   loadFriends = async () => {
@@ -193,7 +255,7 @@ export default class Twitter extends Component {
   }
 
   getPropsForScreen = () => {
-    const { searchResults, loading, nonFollowers, hasMoreSearchResults } = this.state;
+    const { searchResults, tweetResults, tweetsTerms, hasMoreTweetResults, loading, nonFollowers, hasMoreSearchResults } = this.state;
 
     switch (this.state.view.name) {
       case views.UserSearch.name:
@@ -202,6 +264,17 @@ export default class Twitter extends Component {
           loadMore: this.loadMoreSearchResults,
           followUser: this.follow,
           hasMoreSearchResults,
+        };
+      case views.TweetSearch.name:
+        return {
+          tweetResults,
+          tweetsTerms,
+          loadMore: this.loadMoreTweets,
+          followUser: this.follow,
+          unfollowUser: this.unfollow,
+          toggleFavorite: this.toggleFavorite,
+          toggleRetweet: this.toggleRetweet,
+          hasMoreSearchResults: hasMoreTweetResults,
         };
       case views.UnfollowUsers.name:
         return {
@@ -228,6 +301,20 @@ export default class Twitter extends Component {
     }
   }
 
+  getSearchFunction = () => {
+    const { view } = this.state;
+    if (views[view.name].searchable) {
+      switch (view) {
+        case views.UserSearch.name:
+          return this.search;
+        case views.TweetSearch.name:
+        default:
+          return this.searchTweets;
+      }
+    }
+    return null;
+  }
+
   render() {
     const { currentAccount, view } = this.state;
     const screenProps = this.getPropsForScreen();
@@ -239,7 +326,7 @@ export default class Twitter extends Component {
           titleSize={36}
           subtext={views[view.name].description}
           connect={view.name === views.Home.name ? this.signIn : null}
-          search={views[view.name].searchable ? this.search : null}
+          search={this.getSearchFunction()}
           searchTextChange={views[view.name].searchable ? this.searchTextChange : null}
           account={currentAccount ? { name: `@${currentAccount.name}` } : null}
           switchAccounts={() => {
@@ -264,7 +351,7 @@ const Cards = ({ navigation }) => (
     <View style={styles.cardContainer}>
       <Card
         description={views.UserSearch.description}
-        title="KEYWORD SEARCH"
+        title="USER SEARCH"
         color={colors.blueGreen}
         logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-twitter-icon.svg')} />)}
         toggle={() => {}}
@@ -272,13 +359,22 @@ const Cards = ({ navigation }) => (
         index={0}
       />
       <Card
-        description={views.UnfollowUsers.description}
-        title="UNFOLLOW ACCOUNTS"
+        description={views.TweetSearch.description}
+        title="TWEET SEARCH"
         color={colors.blue}
         logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-twitter-icon.svg')} />)}
         toggle={() => {}}
-        onPress={() => { navigation.navigate('UnfollowUsers'); }}
+        onPress={() => { navigation.navigate('TweetSearch'); }}
         index={1}
+      />
+      <Card
+        description={views.UnfollowUsers.description}
+        title="UNFOLLOW ACCOUNTS"
+        color={colors.pink}
+        logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-twitter-icon.svg')} />)}
+        toggle={() => {}}
+        onPress={() => { navigation.navigate('UnfollowUsers'); }}
+        index={2}
       />
     </View>
   </ScrollView>
@@ -290,6 +386,9 @@ const TwitterApp = new StackNavigator({
   },
   UserSearch: {
     screen: UserSearch,
+  },
+  TweetSearch: {
+    screen: TweetSearch,
   },
   UnfollowUsers: {
     screen: UnfollowUsers,
@@ -308,7 +407,12 @@ const views = {
   },
   UserSearch: {
     name: 'UserSearch',
-    description: 'Search people based on interests and location.',
+    description: 'Search people based on interests and information.',
+    searchable: true,
+  },
+  TweetSearch: {
+    name: 'TweetSearch',
+    description: 'Search tweets based on hashtags and content.',
     searchable: true,
   },
   UnfollowUsers: {

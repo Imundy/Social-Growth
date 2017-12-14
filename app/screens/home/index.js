@@ -43,7 +43,7 @@ export default class Home extends Component {
   componentDidMount = async () => {
     const user = await AsyncStorage.getItem('user');
     if (user != null) {
-      this.props.navigation.navigate('Facebook');
+      this.props.navigation.navigate('Twitter');
       return;
     }
 
