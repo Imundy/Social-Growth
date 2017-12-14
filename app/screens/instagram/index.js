@@ -123,6 +123,7 @@ export default class Instagram extends Component {
 
     this.networkRequest(`https://api.instagram.com/v1/tags/search?q=${query}&access_token=${this.state.currentAccount.accessToken}`)
       .then((res) => {
+        console.log(res);
         if (res.status < 200 || res.status >= 300) {
           this.setState({
             error: 'Failed request',

@@ -58,9 +58,11 @@ export default class Home extends Component {
     let insta = accounts.filter(account => account.type === 'instagram');
     if (insta.length !== 0) {
       insta = await Promise.all(insta.map(async (account) => {
+        console.log(account.id);
         const me = await fetch(`https://api.instagram.com/v1/users/self/?access_token=${account.tokens[0]}`).then(response => response.json());
-        return { ...me.data, accessToken: account.tokens[0] };
+        return { ...me.data, accountId: account.id, accessToken: account.tokens[0] };
       }));
+      console.log(insta);
       await AsyncStorage.setItem('accounts:instagram', JSON.stringify(insta));
       await AsyncStorage.setItem('currentAccount:instagram', JSON.stringify(insta[0]));
     }
@@ -90,7 +92,7 @@ export default class Home extends Component {
     if (facebookAccounts.length !== 0) {
       facebookAccounts = await Promise.all(facebookAccounts.map(async (account) => {
         const user = await fbRequest.userProfile(account.tokens[0]);
-        return { ...account, profileImage: user.picture.data.url, displayName: user.name, accountId: 4 };
+        return { ...account, profileImage: user.picture.data.url, displayName: user.name, accountId: account.id };
       }));
 
 

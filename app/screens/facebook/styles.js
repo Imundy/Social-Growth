@@ -7,7 +7,6 @@ const styles = {
     height: Dimensions.get('screen').height,
   },
   cardContainer: {
-    paddingVertical: 32,
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
@@ -100,7 +99,10 @@ const styles = {
     flexDirection: 'row',
     width: Dimensions.get('screen').width,
     alignItems: 'center',
-    padding: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 2,
   },
 };
 

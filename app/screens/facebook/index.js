@@ -120,7 +120,7 @@ export default class Facebook extends Component {
     let pages = await facebookRequest.pages(this.state.currentAccount.tokens[0]);
     const { status } = response;
     response = await response.json();
-    await AsyncStorage.setItem('pages:facebook', response);
+    await AsyncStorage.setItem('pages:facebook', JSON.stringify(response));
 
     if (status >= 200 && status < 300) {
       selected = response;
@@ -237,6 +237,7 @@ export default class Facebook extends Component {
               updateCriteria: this.updateCriteriaSetting,
               addPage: this.addPage,
               pages: this.state.pages,
+              refreshPages: this.updatePages,
             }}
           /> : null
         }
@@ -385,6 +386,9 @@ const renderPage = (page, addPage) => (
 
 const ManagePages = ({ screenProps }) => (
   <View style={styles.cardContainer}>
+    <TouchableOpacity style={{ width: '100%', height: 60, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center', marginBottom: 12 }} onPress={screenProps.refreshPages}>
+      <Text style={{ fontSize: 16, color: colors.blue }}>Refresh pages</Text>
+    </TouchableOpacity>
     <FlatList
       contentContainerStyle={{ backgroundColor: 'white' }}
       data={screenProps.pages}
