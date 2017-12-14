@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {
   AsyncStorage,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -214,6 +215,7 @@ export default class Home extends Component {
         autoCapitalize="none"
         autoCorrect={false}
         placeholder="Email"
+        secureTextEntry={false}
       />
       <TextInput
         underlineColorAndroid="transparent"
@@ -241,6 +243,7 @@ export default class Home extends Component {
         autoCapitalize="none"
         autoCorrect={false}
         placeholder="Email"
+        secureTextEntry={false}
       />
       {this.state.passwordError && <Animatable.Text animation="errorAnimation" duration={200} style={{ color: colors.red, fontSize: 14 }}>{this.state.passwordError}</Animatable.Text>}
       <TextInput
@@ -284,12 +287,12 @@ export default class Home extends Component {
     }
 
     return (
-      <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.container}>
         <Text style={{ fontSize: 48, color: colors.blue, marginBottom: 12 }}>Simply Grow</Text>
         {this.state.formError && <Animatable.Text animation="errorAnimation" duration={200} style={{ color: colors.red, fontSize: 14 }}>{this.state.formError}</Animatable.Text>}
         {signIn ? this.renderSigninForm() : this.renderRegisterForm()}
         {this.renderButtons()}
-      </View>
+      </ScrollView>
     );
   }
 }

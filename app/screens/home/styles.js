@@ -1,11 +1,12 @@
+import { Dimensions } from 'react-native';
 import colors from '../../styles/colors';
 
 const styles = {
   container: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 20,
+    height: Dimensions.get('screen').height + 75,
   },
   option: {
     flexDirection: 'row',
