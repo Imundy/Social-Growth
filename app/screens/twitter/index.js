@@ -325,7 +325,6 @@ export default class Twitter extends Component {
           title="TWITTER"
           titleSize={36}
           subtext={views[view.name].description}
-          connect={view.name === views.Home.name ? this.signIn : null}
           search={this.getSearchFunction()}
           searchTextChange={views[view.name].searchable ? this.searchTextChange : null}
           account={currentAccount ? { name: `@${currentAccount.name}` } : null}

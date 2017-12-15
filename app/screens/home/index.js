@@ -56,37 +56,39 @@ export default class Home extends Component {
   }
 
   storeAccounts = async ({ accounts }) => {
-    let insta = accounts.filter(account => account.type === 'instagram');
-    if (insta.length !== 0) {
-      insta = await Promise.all(insta.map(async (account) => {
-        console.log(account.id);
-        const me = await fetch(`https://api.instagram.com/v1/users/self/?access_token=${account.tokens[0]}`).then(response => response.json());
-        return { ...me.data, accountId: account.id, accessToken: account.tokens[0] };
-      }));
-      console.log(insta);
-      await AsyncStorage.setItem('accounts:instagram', JSON.stringify(insta));
-      await AsyncStorage.setItem('currentAccount:instagram', JSON.stringify(insta[0]));
-    }
+    // const insta = accounts.filter(account => account.type === 'instagram');
+    // if (insta.length !== 0) {
+    //   insta = await Promise.all(insta.map(async (account) => {
+    //     const me = await fetch(`https://api.instagram.com/v1/users/self/?access_token=${account.tokens[0]}`).then(response => response.json());
+    //     return { ...me.data, accountId: account.id, accessToken: account.tokens[0] };
+    //   }));
+    //   await AsyncStorage.setItem('accounts:instagram', JSON.stringify(insta));
+    //   await AsyncStorage.setItem('currentAccount:instagram', JSON.stringify(insta[0]));
+    // }
 
     let twitterAccounts = accounts.filter(account => account.type === 'twitter');
     if (twitterAccounts.length !== 0) {
-      const client = twitter({
-        consumerKey: config.twitterConsumerToken,
-        consumerSecret: config.twitterConsumerSecret,
-        accessToken: twitterAccounts[0].tokens[0],
-        accessTokenSecret: twitterAccounts[0].tokens[1],
-      });
+      try {
+        const client = twitter({
+          consumerKey: config.twitterConsumerToken,
+          consumerSecret: config.twitterConsumerSecret,
+          accessToken: twitterAccounts[0].tokens[0],
+          accessTokenSecret: twitterAccounts[0].tokens[1],
+        });
 
-      const userIds = twitterAccounts.map(x => x.socialAccountId).join(',');
-      const accountInfo = await client.rest.get('users/lookup', { user_id: userIds, stringify_ids: true });
+        const userIds = twitterAccounts.map(x => x.socialAccountId).join(',');
+        const accountInfo = await client.rest.get('users/lookup', { user_id: userIds, stringify_ids: true });
 
-      twitterAccounts = accountInfo.map((info) => {
-        const account = twitterAccounts.find(acc => acc.socialAccountId === info.id);
-        return { displayName: info.name, profileImage: info.profile_image_url_https, id: account.socialAccountId, accountId: account.id };
-      });
+        twitterAccounts = accountInfo.map((info) => {
+          const account = twitterAccounts.find(acc => acc.socialAccountId === info.id);
+          return { displayName: info.name, profileImage: info.profile_image_url_https, id: account.socialAccountId, accountId: account.id };
+        });
 
-      await AsyncStorage.setItem('accounts:twitter', JSON.stringify(twitterAccounts));
-      await AsyncStorage.setItem('currentAccount:twitter', JSON.stringify(twitterAccounts[0]));
+        await AsyncStorage.setItem('accounts:twitter', JSON.stringify(twitterAccounts));
+        await AsyncStorage.setItem('currentAccount:twitter', JSON.stringify(twitterAccounts[0]));
+      } catch (error) {
+        console.log(error);
+      }
     }
 
     let facebookAccounts = accounts.filter(account => account.type === 'facebook');
