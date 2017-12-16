@@ -80,7 +80,7 @@ export default class Home extends Component {
         const accountInfo = await client.rest.get('users/lookup', { user_id: userIds, stringify_ids: true });
 
         twitterAccounts = accountInfo.map((info) => {
-          const account = twitterAccounts.find(acc => acc.socialAccountId === info.id);
+          const account = twitterAccounts.find(acc => acc.socialAccountId === info.id_str);
           return { displayName: info.name, profileImage: info.profile_image_url_https, id: account.socialAccountId, accountId: account.id };
         });
 
