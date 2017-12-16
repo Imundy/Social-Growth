@@ -120,7 +120,7 @@ export default class Home extends Component {
       });
 
       if (response.status === 404 || response.status === 401) {
-        this.setState({ formError: 'Invalid username or password' });
+        this.setState({ formError: 'Invalid email or password' });
         return;
       } else if (response.status < 200 || response.status >= 300) {
         this.setState({ formError: 'An error occurred' });
@@ -136,12 +136,16 @@ export default class Home extends Component {
       await AsyncStorage.setItem('user', JSON.stringify({ email: this.state.email, userId: user.userId, token: user.token }));
       this.props.navigation.navigate('Settings');
     } catch (error) {
+      this.setState({ emailError: 'Invalid email or password.' });
       console.log(error);
     }
   }
 
   register = async () => {
-    if (this.state.passwordError || this.state.emailError || this.state.email === '' || this.state.password === '') {
+    console.log('register');
+    if (this.state.passwordError || this.state.emailError || this.state.email === '' || this.state.password === '' || this.state.password !== this.state.confirmation) {
+      this.validateEmail();
+      this.validateConfirmation();
       return;
     }
 
@@ -156,7 +160,7 @@ export default class Home extends Component {
       });
 
       if (response.status === 400) {
-        this.setState({ formError: 'Invalid username or password' });
+        this.setState({ formError: 'Invalid email or password' });
         return;
       } else if (response.status < 200 || response.status >= 300) {
         this.setState({ formError: 'An error occurred' });
@@ -164,13 +168,15 @@ export default class Home extends Component {
       }
 
       const user = await response.json();
-      if (user == null || user.userId == null) {
+
+      if (user == null || user.userId == null || user.userId === 'error') {
         this.setState({ formError: 'An error occurred' });
         return;
       }
 
       this.signIn();
     } catch (error) {
+      this.setState({ emailError: 'An account with this email already exists.' });
       console.log(error);
     }
   }
