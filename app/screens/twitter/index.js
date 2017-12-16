@@ -44,7 +44,7 @@ export default class Twitter extends Component {
       return;
     }
 
-    const { accessToken, accessTokenSecret } = this.state.currentAccount;
+    const { accessToken, accessTokenSecret } = this.state.currentAccount.tokens == null ? this.state.currentAccount : this.state.currentAccount.tokens;
     const clients = twitter({
       consumerKey: config.twitterConsumerToken,
       consumerSecret: config.twitterConsumerSecret,
@@ -76,9 +76,9 @@ export default class Twitter extends Component {
   signIn = async () => {
     try {
       const twitterResponse = await auth(
-                { consumerKey: config.twitterConsumerToken, consumerSecret: config.twitterConsumerSecret },
-                'socialauth://twitter',
-            );
+          { consumerKey: config.twitterConsumerToken, consumerSecret: config.twitterConsumerSecret },
+          'socialauth://twitter',
+      );
       const twitterAccounts = [...this.state.twitterAccounts];
       twitterAccounts.push(twitterResponse);
       await this.storeAccounts(twitterAccounts, twitterResponse);
@@ -99,8 +99,12 @@ export default class Twitter extends Component {
   }
 
   follow = async (id) => {
-    await this._twitterClient.post('friendships/create', { user_id: id });
-    this.updateFollowingState(id, true);
+    try {
+      await this._twitterClient.post('friendships/create', { user_id: id, stringify_ids: true });
+      this.updateFollowingState(id, true);
+    } catch (error) {
+      console.log(`An error occurred following this user: ${id}`, error);
+    }
   }
 
   unfollow = async (id) => {
@@ -115,12 +119,16 @@ export default class Twitter extends Component {
   updateFollowingState = (id, following) => {
     this.setState((state) => {
       const { searchResults, tweetResults, nonFollowers } = state;
+
       if (searchResults) {
         const searchIndex = searchResults.findIndex(x => x.id === id);
         searchResults[searchIndex].following = following;
       }
       if (tweetResults) {
-        const tweetIndex = tweetResults.findIndex(x => x.id === id);
+        const tweetIndex = tweetResults.findIndex(x => x.user.id_str === id);
+        if (tweetIndex === -1) {
+          return { searchResults, tweetResults, nonFollowers };
+        }
         tweetResults[tweetIndex].user.following = following;
       }
       if (nonFollowers) {

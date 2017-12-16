@@ -63,9 +63,9 @@ const renderTwitterResult = ({ tweet, followUser, unfollowUser, toggleFavorite, 
         style={styles.tweetSearch.followActionContainer}
         onPress={() => {
           if (tweet.user.following) {
-            unfollowUser(tweet.user.id);
+            unfollowUser(tweet.user.id.toString());
           } else {
-            followUser(tweet.user.id);
+            followUser(tweet.user.id.toString());
           }
         }}
       >

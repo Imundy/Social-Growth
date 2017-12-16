@@ -47,10 +47,21 @@ export default class Settings extends Component {
     twitterAccounts = twitterAccounts && JSON.parse(twitterAccounts);
     current = current && JSON.parse(current);
 
-    this.setState({
+
+    await this.setState({
       twitterAccounts,
       twitter: current,
     });
+
+    if (Array.isArray(current.tokens)) {
+      const result = {};
+      result.accessToken = current.tokens[0];
+      result.accessTokenSecret = current.tokens[1];
+      current.tokens = result;
+
+      await this.removeAccount(current.id, 'twitter');
+      await this.storeAccounts(current, 'twitter', true);
+    }
   }
 
   setupFacebook = async () => {
@@ -159,10 +170,10 @@ export default class Settings extends Component {
       twitterResponse = {
         ...twitterResponse,
         id: twitterResponse.id,
-        tokens: [
-          twitterResponse.accessToken,
-          twitterResponse.accessTokenSecret,
-        ],
+        tokens: {
+          accessToken: twitterResponse.accessToken,
+          accessTokenSecret: twitterResponse.accessTokenSecret,
+        },
       };
 
       const clients = twitter({
@@ -234,11 +245,11 @@ export default class Settings extends Component {
     }
   }
 
-  storeAccounts = async (newAccount, social) => {
+  storeAccounts = async (newAccount, social, update = false) => {
     try {
       const accounts = [...(this.state[`${social}Accounts`] || [])];
 
-      if (accounts.find(x => x.id === newAccount.id)) {
+      if (accounts.find(x => x.id === newAccount.id) && !update) {
         return;
       }
 

@@ -81,7 +81,7 @@ export default class Home extends Component {
 
         twitterAccounts = accountInfo.map((info) => {
           const account = twitterAccounts.find(acc => acc.socialAccountId === info.id_str);
-          return { displayName: info.name, profileImage: info.profile_image_url_https, id: account.socialAccountId, accountId: account.id };
+          return { ...account, displayName: info.name, profileImage: info.profile_image_url_https, id: account.socialAccountId, accountId: account.id };
         });
 
         await AsyncStorage.setItem('accounts:twitter', JSON.stringify(twitterAccounts));
