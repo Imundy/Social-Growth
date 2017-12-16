@@ -130,6 +130,7 @@ export default class Twitter extends Component {
           return { searchResults, tweetResults, nonFollowers };
         }
         tweetResults[tweetIndex].user.following = following;
+        tweetResults.splice(tweetIndex, 1);
       }
       if (nonFollowers) {
         const nonFollowersIndex = nonFollowers.findIndex(x => x.id === id);
@@ -339,8 +340,8 @@ export default class Twitter extends Component {
           switchAccounts={() => {
             this._navigator._navigation.navigate('SwitchAccounts');
           }}
-          navigate={view.name === 'UserSearch' || view.name === 'UnfollowUsers' || view.name === 'SwitchAccounts' ? () => this._navigator._navigation.goBack() : () => this.props.navigation.navigate('DrawerOpen')}
-          showMenu={view.name === 'UserSearch' || view.name === 'UnfollowUsers' || view.name === 'SwitchAccounts'}
+          navigate={view.name === 'TweetSearch' || view.name === 'UserSearch' || view.name === 'UnfollowUsers' || view.name === 'SwitchAccounts' ? () => this._navigator._navigation.goBack() : () => this.props.navigation.navigate('DrawerOpen')}
+          showMenu={view.name === 'TweetSearch' || view.name === 'UserSearch' || view.name === 'UnfollowUsers' || view.name === 'SwitchAccounts'}
           ref={(ref) => { this.header = ref; }}
         />
         <TwitterApp
