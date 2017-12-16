@@ -142,7 +142,6 @@ export default class Home extends Component {
   }
 
   register = async () => {
-    console.log('register');
     if (this.state.passwordError || this.state.emailError || this.state.email === '' || this.state.password === '' || this.state.password !== this.state.confirmation) {
       this.validateEmail();
       this.validateConfirmation();

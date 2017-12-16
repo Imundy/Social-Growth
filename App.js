@@ -34,9 +34,6 @@ const AppNavigator = DrawerNavigator({
   Twitter: {
     screen: Twitter,
   },
-  Instagram: {
-    screen: Instagram,
-  },
   Settings: {
     screen: Settings,
   },
@@ -56,12 +53,6 @@ const DrawerContainer = ({ navigation }) => (
       <SvgUri width="25" height="25" source={require('./app/icons/svg/blue-twitter-icon.svg')} />
       <View style={{ justifyContent: 'center', width: 120 }}>
         <Text style={{ textAlign: 'center', fontWeight: '500', color: colors.blue }}>TWITTER</Text>
-      </View>
-    </TouchableOpacity>
-    <TouchableOpacity onPress={() => navigation.navigate('Instagram')} style={[styles.item, navigation.state.routes[navigation.state.index].key === 'Instagram' ? styles.active : {}]}>
-      <SvgUri width="25" height="25" source={require('./app/icons/svg/instagram-logo-blue.svg')} />
-      <View style={{ justifyContent: 'center', width: 120 }}>
-        <Text style={{ textAlign: 'center', fontWeight: '500', color: colors.blue }}>INSTAGRAM</Text>
       </View>
     </TouchableOpacity>
     <TouchableOpacity onPress={() => navigation.navigate('Facebook')} style={[styles.item, navigation.state.routes[navigation.state.index].key === 'Facebook' ? styles.active : {}]}>
