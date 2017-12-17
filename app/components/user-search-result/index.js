@@ -6,8 +6,8 @@ import SvgUri from 'react-native-svg-uri';
 import styles from './styles';
 
 // Icons
-import WhitePlusIcon from '../../icons/svg/white-plus-icon.svg';
-import BlueVerifiedIcon from '../../icons/svg/blue-verified-check.svg';
+import WhitePlusIcon from '../../icons/svg/white-plus-icon.js';
+import BlueVerifiedIcon from '../../icons/svg/blue-verified-check.js';
 
 export default class UserSearchResult extends PureComponent {
   static propTypes = {

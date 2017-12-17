@@ -4,10 +4,10 @@ import SvgUri from 'react-native-svg-uri';
 import styles from './styles';
 
 // Icons
-import PinkFavoriteIcon from '../../icons/svg/favorite-pink.svg';
-import PinkFavoriteBorderIcon from '../../icons/svg/favorite-border-pink.svg';
-import DarkRetweetIcon from '../../icons/svg/retweet-green.svg';
-import GreenRetweetIcon from '../../icons/svg/retweet-green.svg';
+import PinkFavoriteIcon from '../../icons/svg/favorite-pink.js';
+import PinkFavoriteBorderIcon from '../../icons/svg/favorite-border-pink.js';
+import DarkRetweetIcon from '../../icons/svg/retweet-green.js';
+import GreenRetweetIcon from '../../icons/svg/retweet-green.js';
 
 export default class TweetSearch extends PureComponent {
   componentWillReceiveProps(nextProps) {

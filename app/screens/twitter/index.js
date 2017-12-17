@@ -15,7 +15,7 @@ import colors from '../../styles/colors';
 import styles from './styles';
 
 // Icons
-import BlueTwitterIcon from '../../icons/svg/blue-twitter-icon.svg';
+import BlueTwitterIcon from '../../icons/svg/white-twitter-icon';
 
 export default class Twitter extends Component {
   static navigationOptions = {

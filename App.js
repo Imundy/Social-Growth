@@ -7,16 +7,16 @@
 import React, { Component } from 'react';
 
 import { DrawerNavigator } from 'react-navigation';
+import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
+import SvgUri from 'react-native-svg-uri';
 import Twitter from './app/screens/twitter';
 import Instagram from './app/screens/instagram';
 import Facebook from './app/screens/facebook';
 import Home from './app/screens/home';
 import Settings from './app/screens/settings';
-import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
-import SvgUri from 'react-native-svg-uri';
-import BlueTwitterIcon from './app/icons/svg/blue-twitter-icon.svg';
-import BlueFacebookIcon from './app/icons/svg/blue-facebook-logo.svg';
-import BlueSettingsIcon from './app/icons/svg/blue-settings-icon.svg';
+import BlueTwitterIcon from './app/icons/svg/blue-twitter-icon.js';
+import BlueFacebookIcon from './app/icons/svg/blue-facebook-logo.js';
+import BlueSettingsIcon from './app/icons/svg/blue-settings-icon.js';
 import colors from './app/styles/colors';
 
 console.disableYellowBox = true;

@@ -23,8 +23,8 @@ import colors from '../../styles/colors';
 import styles from './styles';
 
 // Icons
-import WhiteFacebookLogo from '../../icons/svg/white-facebook-logo.svg';
-import BlueVerifiedIcon from '../../icons/svg/blue-verified-check.svg';
+import WhiteFacebookLogo from '../../icons/svg/white-facebook-logo.js';
+import BlueVerifiedIcon from '../../icons/svg/blue-verified-check.js';
 
 const facebookRequest = new FacebookRequest();
 

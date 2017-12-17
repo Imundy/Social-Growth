@@ -19,8 +19,8 @@ import simplyGrowClient from '../../clients/simply-grow-client';
 import { styles } from './styles.js';
 
 // Icons
-import BlackMenuIcon from '../../icons/svg/ic_menu_black_24px.svg';
-import GreenCheckIcon from '../../icons/svg/green-check-icon.svg';
+import BlackMenuIcon from '../../icons/svg/ic_menu_black_24px.js';
+import GreenCheckIcon from '../../icons/svg/green-check-icon.js';
 
 const fbRequest = new FacebookRequest();
 const windowWidth = Dimensions.get('window').width;

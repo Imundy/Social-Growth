@@ -9,7 +9,7 @@ import colors from '../../styles/colors';
 import styles from './styles';
 
 // Icons
-import BlueVerifiedIcon from '../../icons/svg/blue-verified-check.svg';
+import BlueVerifiedIcon from '../../icons/svg/blue-verified-check.js';
 export default class UserUnfollowCard extends PureComponent {
   static propTypes = {
     user: PropTypes.shape({

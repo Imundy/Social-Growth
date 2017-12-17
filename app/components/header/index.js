@@ -12,9 +12,9 @@ import styles from './styles.js';
 import colors from '../../styles/colors.js';
 
 // Icons
-import BlackMenuIcon from '../../icons/svg/ic_menu_black_24px.svg';
-import WhiteArrowLeftIcon from '../../icons/svg/white-arrow-left.svg';
-import WhiteSearchIcon from '../../icons/svg/white-search-icon.svg';
+import BlackMenuIcon from '../../icons/svg/ic_menu_black_24px.js';
+import WhiteArrowLeftIcon from '../../icons/svg/white-arrow-left.js';
+import WhiteSearchIcon from '../../icons/svg/white-search-icon.js';
 
 Animatable.initializeRegistryWithDefinitions({
   textInputAnimation: {

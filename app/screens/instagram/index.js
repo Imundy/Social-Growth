@@ -22,7 +22,7 @@ import {
 } from './util';
 
 // Icons
-import InstagramLogoIcon from '../../icons/svg/instagram-logo.svg';
+import InstagramLogoIcon from '../../icons/svg/instagram-logo.js';
 
 export default class Instagram extends Component {
   state = {
