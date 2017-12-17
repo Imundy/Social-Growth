@@ -22,13 +22,17 @@ import urls from '../../urls';
 import colors from '../../styles/colors';
 import styles from './styles';
 
+// Icons
+import WhiteFacebookLogo from '../../icons/svg/white-facebook-logo.svg';
+import BlueVerifiedIcon from '../../icons/svg/blue-verified-check.svg';
+
 const facebookRequest = new FacebookRequest();
 
 export default class Facebook extends Component {
   static navigationOptions = {
     drawerLabel: 'Facebook',
     drawerIcon: () => (
-      <SvgUri width="25" height="25" source={require('../../icons/svg/white-facebook-logo.svg')} />
+      <SvgUri width="25" height="25" svgXmlData={WhiteFacebookLogo} />
     ),
   };
 
@@ -268,7 +272,7 @@ const Cards = ({ navigation, screenProps }) => (
         description={views.AutoLikeReviews.description}
         title="AUTO LIKE REVIEWS"
         color={colors.blueGreen}
-        logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-facebook-logo.svg')} />)}
+        logo={() => (<SvgUri width="25" height="25" svgXmlData={WhiteFacebookLogo} />)}
         toggle={() => { screenProps.showModal(<AutoLikeReview updateRating={screenProps.updateRating} />); }}
         canToggle
         on={screenProps.settings.autoLikeReviews.on}
@@ -279,7 +283,7 @@ const Cards = ({ navigation, screenProps }) => (
         description={views.AutoLikeComments.description}
         title="AUTO LIKE COMMENTS"
         color={colors.blue}
-        logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-facebook-logo.svg')} />)}
+        logo={() => (<SvgUri width="25" height="25" svgXmlData={WhiteFacebookLogo} />)}
         toggle={() => {
           screenProps.showModal(<UpdateCriteria
             updateCriteria={screenProps.updateCriteria}
@@ -302,7 +306,7 @@ const Cards = ({ navigation, screenProps }) => (
         description={views.AutoHideComments.description}
         title="AUTO HIDE COMMENTS"
         color={colors.pink}
-        logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-facebook-logo.svg')} />)}
+        logo={() => (<SvgUri width="25" height="25" svgXmlData={WhiteFacebookLogo} />)}
         toggle={() => {
           screenProps.showModal(<UpdateCriteria
             updateCriteria={screenProps.updateCriteria}
@@ -377,7 +381,7 @@ const renderPage = (page, addPage) => (
     />
     <View style={styles.profileInfo}>
       <View style={styles.nameContainer}>
-        {page.isSelected ? <SvgUri source={require('../../icons/svg/blue-verified-check.svg')} height="16" width="16" /> : null}
+        {page.isSelected ? <SvgUri svgXmlData={BlueVerifiedIcon} height="16" width="16" /> : null}
         <Text style={styles.profileName}>{page.name}</Text>
       </View>
     </View>

@@ -8,6 +8,8 @@ import * as Animatable from 'react-native-animatable';
 import colors from '../../styles/colors';
 import styles from './styles';
 
+// Icons
+import BlueVerifiedIcon from '../../icons/svg/blue-verified-check.svg';
 export default class UserUnfollowCard extends PureComponent {
   static propTypes = {
     user: PropTypes.shape({
@@ -76,7 +78,7 @@ export default class UserUnfollowCard extends PureComponent {
             <View style={styles.profileInfo}>
               <View style={styles.nameContainer}>
                 <Text style={styles.profileName}>{user.displayName}</Text>
-                {user.verified ? <SvgUri source={require('../../icons/svg/blue-verified-check.svg')} height="16" width="16" /> : null}
+                {user.verified ? <SvgUri svgXmlData={BlueVerifiedIcon} height="16" width="16" /> : null}
               </View>
               <Text style={styles.followerCount}>{`${numberWithCommas(user.followerCount)} followers`}</Text>
             </View>

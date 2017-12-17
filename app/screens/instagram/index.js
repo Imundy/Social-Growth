@@ -21,6 +21,9 @@ import {
   addKnownFollowing,
 } from './util';
 
+// Icons
+import InstagramLogoIcon from '../../icons/svg/instagram-logo.svg';
+
 export default class Instagram extends Component {
   state = {
     isLoading: false,
@@ -266,7 +269,7 @@ const Cards = ({ navigation }) => (
         description={views.Search.description}
         title="KEYWORD SEARCH"
         color={colors.blueGreen}
-        logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/instagram-logo.svg')} />)}
+        logo={() => (<SvgUri width="25" height="25" svgXmlData={InstagramLogoIcon} />)}
         toggle={() => {}}
         onPress={() => { navigation.navigate('Search'); }}
         index={0}
@@ -275,7 +278,7 @@ const Cards = ({ navigation }) => (
         description={views.Manage.description}
         title="MANAGE AUDIENCE"
         color={colors.blue}
-        logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/instagram-logo.svg')} />)}
+        logo={() => (<SvgUri width="25" height="25" svgXmlData={InstagramLogoIcon} />)}
         toggle={() => {}}
         onPress={() => { navigation.navigate('Manage'); }}
         index={1}

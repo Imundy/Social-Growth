@@ -14,11 +14,14 @@ import config from '../../config';
 import colors from '../../styles/colors';
 import styles from './styles';
 
+// Icons
+import BlueTwitterIcon from '../../icons/svg/blue-twitter-icon.svg';
+
 export default class Twitter extends Component {
   static navigationOptions = {
     drawerLabel: 'Twitter',
     drawerIcon: () => (
-      <SvgUri width="25" height="25" source={require('../../icons/svg/blue-twitter-icon.svg')} />
+      <SvgUri width="25" height="25" svgXmlData={BlueTwitterIcon} />
     ),
   };
 
@@ -361,7 +364,7 @@ const Cards = ({ navigation }) => (
         description={views.UserSearch.description}
         title="USER SEARCH"
         color={colors.blueGreen}
-        logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-twitter-icon.svg')} />)}
+        logo={() => (<SvgUri width="25" height="25" svgXmlData={BlueTwitterIcon} />)}
         toggle={() => {}}
         onPress={() => { navigation.navigate('UserSearch'); }}
         index={0}
@@ -370,7 +373,7 @@ const Cards = ({ navigation }) => (
         description={views.TweetSearch.description}
         title="TWEET SEARCH"
         color={colors.blue}
-        logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-twitter-icon.svg')} />)}
+        logo={() => (<SvgUri width="25" height="25" svgXmlData={BlueTwitterIcon} />)}
         toggle={() => {}}
         onPress={() => { navigation.navigate('TweetSearch'); }}
         index={1}
@@ -379,7 +382,7 @@ const Cards = ({ navigation }) => (
         description={views.UnfollowUsers.description}
         title="UNFOLLOW ACCOUNTS"
         color={colors.pink}
-        logo={() => (<SvgUri width="25" height="25" source={require('../../icons/svg/white-twitter-icon.svg')} />)}
+        logo={() => (<SvgUri width="25" height="25" svgXmlData={BlueTwitterIcon} />)}
         toggle={() => {}}
         onPress={() => { navigation.navigate('UnfollowUsers'); }}
         index={2}

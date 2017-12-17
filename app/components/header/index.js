@@ -11,6 +11,11 @@ import * as Animatable from 'react-native-animatable';
 import styles from './styles.js';
 import colors from '../../styles/colors.js';
 
+// Icons
+import BlackMenuIcon from '../../icons/svg/ic_menu_black_24px.svg';
+import WhiteArrowLeftIcon from '../../icons/svg/white-arrow-left.svg';
+import WhiteSearchIcon from '../../icons/svg/white-search-icon.svg';
+
 Animatable.initializeRegistryWithDefinitions({
   textInputAnimation: {
     from: {
@@ -49,8 +54,8 @@ class Header extends Component {
       <Animatable.View style={[styles.headerContainer, { height: 180 }]} ref={(ref) => { this.header = ref; }}>
         <TouchableOpacity style={{ width: 40, height: 40, position: 'absolute', top: 40, left: 20 }} onPress={navigate} >
           {!showMenu ?
-            <SvgUri width="40" height="40" source={require('../../icons/svg/ic_menu_black_24px.svg')} /> :
-            <SvgUri width="40" height="40" source={require('../../icons/svg/white-arrow-left.svg')} />}
+            <SvgUri width="40" height="40" svgXmlData={BlackMenuIcon} /> :
+            <SvgUri width="40" height="40" svgXmlData={WhiteArrowLeftIcon} />}
         </TouchableOpacity>
         <Text style={{ fontWeight: '300', color: colors.lightBlue, fontSize: titleSize }}>{title}</Text>
         <Text style={{ fontWeight: '300', color: 'white', fontSize: 16, textAlign: 'center' }}>{subtext}</Text>
@@ -101,7 +106,7 @@ const renderSearch = (searchTextChange, search) => (
       onSubmitEditing={search}
     />
     <TouchableOpacity style={styles.searchButton} onPress={search}>
-      <SvgUri width="25" height="25" source={require('../../icons/svg/white-search-icon.svg')} />
+      <SvgUri width="25" height="25" svgXmlData={WhiteSearchIcon} />
     </TouchableOpacity>
   </Animatable.View>
 );

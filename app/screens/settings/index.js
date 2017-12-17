@@ -18,6 +18,10 @@ import config from '../../config';
 import simplyGrowClient from '../../clients/simply-grow-client';
 import { styles } from './styles.js';
 
+// Icons
+import BlackMenuIcon from '../../icons/svg/ic_menu_black_24px.svg';
+import GreenCheckIcon from '../../icons/svg/green-check-icon.svg';
+
 const fbRequest = new FacebookRequest();
 const windowWidth = Dimensions.get('window').width;
 
@@ -341,7 +345,7 @@ export default class Settings extends Component {
       <ScrollView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity style={{ width: 40, height: 40, position: 'absolute', top: 24, left: 20 }} onPress={() => this.props.navigation.navigate('DrawerOpen')} >
-            <SvgUri width="40" height="40" source={require('../../icons/svg/ic_menu_black_24px.svg')} />
+            <SvgUri width="40" height="40" svgXmlData={BlackMenuIcon} />
           </TouchableOpacity>
           <Text style={styles.headerText}>Settings</Text>
         </View>
@@ -406,7 +410,7 @@ const Account = ({ account, selectAccount, selectedAccountId, removeAccount, soc
       <View style={styles.profileImage}>
         <Image style={styles.profileImage} source={{ uri: account.profileImage }} />
       </View>
-      {account.id === selectedAccountId && <SvgUri width="18" height="18" source={require('../../icons/svg/green-check-icon.svg')} />}
+      {account.id === selectedAccountId && <SvgUri width="18" height="18" svgXmlData={GreenCheckIcon} />}
       <Text textDecorationLine={selectedAccountId === account.id ? 'underline' : 'none'} style={styles.accountName}>{account.displayName || account.username}</Text>
     </TouchableOpacity>
     <TouchableOpacity onPress={() => removeAccount(account.id, social)}>

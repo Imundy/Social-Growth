@@ -3,6 +3,12 @@ import { FlatList, View, Image, Text, TouchableOpacity } from 'react-native';
 import SvgUri from 'react-native-svg-uri';
 import styles from './styles';
 
+// Icons
+import PinkFavoriteIcon from '../../icons/svg/favorite-pink.svg';
+import PinkFavoriteBorderIcon from '../../icons/svg/favorite-border-pink.svg';
+import DarkRetweetIcon from '../../icons/svg/retweet-green.svg';
+import GreenRetweetIcon from '../../icons/svg/retweet-green.svg';
+
 export default class TweetSearch extends PureComponent {
   componentWillReceiveProps(nextProps) {
     if (this.props.screenProps.searchResults && nextProps.screenProps.searchResults && nextProps.screenProps.searchResults[0].id !== this.props.screenProps.searchResults[0].id) {
@@ -61,9 +67,10 @@ const renderTwitterResult = ({ tweet, followUser, unfollowUser, toggleFavorite, 
         <SvgUri
           width="20"
           height="20"
-          source={tweet.favorited ?
-            require('../../icons/svg/favorite-pink.svg') :
-            require('../../icons/svg/favorite-border-pink.svg')}
+          svgXmlData={tweet.favorited ?
+            PinkFavoriteIcon :
+            PinkFavoriteBorderIcon
+          }
         />
       </TouchableOpacity>
       <TouchableOpacity style={styles.tweetSearch.actionButton} onPress={() => toggleRetweet(tweet.id, tweet.retweeted)}>
@@ -71,8 +78,9 @@ const renderTwitterResult = ({ tweet, followUser, unfollowUser, toggleFavorite, 
           width="20"
           height="20"
           source={tweet.retweeted ?
-            require('../../icons/svg/retweet-green.svg') :
-            require('../../icons/svg/retweet-dark.svg')}
+            GreenRetweetIcon :
+            DarkRetweetIcon
+          }
         />
       </TouchableOpacity>
     </View>

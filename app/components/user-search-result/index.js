@@ -5,6 +5,10 @@ import SvgUri from 'react-native-svg-uri';
 
 import styles from './styles';
 
+// Icons
+import WhitePlusIcon from '../../icons/svg/white-plus-icon.svg';
+import BlueVerifiedIcon from '../../icons/svg/blue-verified-check.svg';
+
 export default class UserSearchResult extends PureComponent {
   static propTypes = {
     user: PropTypes.shape({
@@ -30,7 +34,7 @@ export default class UserSearchResult extends PureComponent {
     return (
       <TouchableOpacity style={styles.addButtonContainer} onPress={() => followUser(user.id)}>
         <View style={styles.addButton}>
-          <SvgUri source={require('../../icons/svg/white-plus-icon.svg')} height="40" width="40" />
+          <SvgUri svgXmlData={WhitePlusIcon} height="40" width="40" />
         </View>
       </TouchableOpacity>
     );
@@ -48,7 +52,7 @@ export default class UserSearchResult extends PureComponent {
         <View style={styles.profileInfo}>
           <View style={styles.nameContainer}>
             <Text style={styles.profileName}>{user.displayName}</Text>
-            {user.verified ? <SvgUri source={require('../../icons/svg/blue-verified-check.svg')} height="16" width="16" /> : null}
+            {user.verified ? <SvgUri svgXmlData={BlueVerifiedIcon} height="16" width="16" /> : null}
           </View>
           <Text style={styles.followerCount}>{`${numberWithCommas(user.followerCount)} followers`}</Text>
         </View>
