@@ -17,6 +17,7 @@ import Settings from './app/screens/settings';
 import BlueTwitterIcon from './app/icons/svg/blue-twitter-icon.js';
 import BlueFacebookIcon from './app/icons/svg/blue-facebook-logo.js';
 import BlueSettingsIcon from './app/icons/svg/blue-settings-icon.js';
+import InstagramLogoBlue from './app/icons/svg/instagram-logo-blue.js';
 import colors from './app/styles/colors';
 
 console.disableYellowBox = true;
@@ -62,7 +63,7 @@ const DrawerContainer = ({ navigation }) => (
       </View>
     </TouchableOpacity>
     <TouchableOpacity onPress={() => navigation.navigate('Instagram')} style={[styles.item, navigation.state.routes[navigation.state.index].key === 'Instagram' ? styles.active : {}]}>
-      <SvgUri width="25" height="25" source={require('./app/icons/svg/instagram-logo-blue.svg')} />
+      <SvgUri width="25" height="25" svgXmlData={InstagramLogoBlue} />
       <View style={{ justifyContent: 'center', width: 120 }}>
         <Text style={{ textAlign: 'center', fontWeight: '500', color: colors.blue }}>INSTAGRAM</Text>
       </View>
