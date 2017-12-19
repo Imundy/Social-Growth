@@ -6,7 +6,7 @@ import styles from './styles';
 // Icons
 import PinkFavoriteIcon from '../../icons/svg/favorite-pink.js';
 import PinkFavoriteBorderIcon from '../../icons/svg/favorite-border-pink.js';
-import DarkRetweetIcon from '../../icons/svg/retweet-green.js';
+import DarkRetweetIcon from '../../icons/svg/retweet-dark';
 import GreenRetweetIcon from '../../icons/svg/retweet-green.js';
 
 export default class TweetSearch extends PureComponent {
@@ -77,7 +77,7 @@ const renderTwitterResult = ({ tweet, followUser, unfollowUser, toggleFavorite, 
         <SvgUri
           width="20"
           height="20"
-          source={tweet.retweeted ?
+          svgXmlData={tweet.retweeted ?
             GreenRetweetIcon :
             DarkRetweetIcon
           }
