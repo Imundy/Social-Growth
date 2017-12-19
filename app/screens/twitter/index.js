@@ -316,7 +316,7 @@ export default class Twitter extends Component {
   getSearchFunction = () => {
     const { view } = this.state;
     if (views[view.name].searchable) {
-      switch (view) {
+      switch (view.name) {
         case views.UserSearch.name:
           return this.search;
         case views.TweetSearch.name:
