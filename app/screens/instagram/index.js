@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import {
   View,
+  Text,
   WebView,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 
 import Header from '../../components/header';
@@ -37,7 +39,7 @@ export default class Instagram extends Component {
       return;
     }
 
-    this.setState({ tag: query, pictureLinkIndex: 0 });
+    this.setState({ tag: query.replace(/\W/g, ''), pictureLinkIndex: 0 });
   }
 
   onHiddenNavigationStateChange = (navEvent) => {
@@ -65,7 +67,7 @@ export default class Instagram extends Component {
   scrollHiddenView = () => {
     /* eslint-disable */
     function scrollView() {
-      window.scrollBy(0, 400);
+      window.scrollBy(0, 1000);
     }
     const injectScript = '(' + String(scrollView) + ')();';
     /* eslint-enablex */
@@ -77,7 +79,7 @@ export default class Instagram extends Component {
       if (navEvent.url.match(/.*instagram.com\/p\/.*/)) {
         /* eslint-disable */
         function attachFollowListener() {
-          var followButton = Array.from(document.getElementsByTagName('button')).find(x => x.innerText == 'Follow');
+          var followButton = Array.from(document.getElementsByTagName('button')).find(x => x.innerText == 'Follow' || x.innerText == 'Following');
           if (!followButton) {
             setTimeout(attachFollowListener, 250);
           } else {
@@ -102,13 +104,17 @@ export default class Instagram extends Component {
       const pictureLinkIndex = this.state.pictureLinkIndex ? this.state.pictureLinkIndex : 0;
       this.setState({ webViewType: 'pictureLink', pictureLinks: data.pictureLinks, pictureLinkIndex });
     } else if (data.type === 'followClicked') {
-      this.setState(state => ({ pictureLinkIndex: state.pictureLinkIndex + 1 }), () => {
-        if (this.state.pictureLinkIndex + 5 >= this.state.pictureLinks.length) {
-          this.scrollHiddenView();
-          this.injectLinkScraper();
-        }
-      });
+      this.updatePictureLinkIndex();
     }
+  }
+
+  updatePictureLinkIndex = () => {
+    this.setState(state => ({ pictureLinkIndex: state.pictureLinkIndex + 1 }), () => {
+      if (this.state.pictureLinkIndex + 100 >= this.state.pictureLinks.length) {
+        this.scrollHiddenView();
+        this.injectLinkScraper();
+      }
+    });
   }
 
   postMessage(action) {
@@ -149,24 +155,35 @@ export default class Instagram extends Component {
             showMenu={view.name === 'Search' || view.name === 'Manage'}
             ref={(ref) => { this.header = ref; }}
           />
-          <WebView
-            style={{ position: 'absolute', height: Dimensions.get('screen').height, width: Dimensions.get('screen').width, zIndex: 1 }}
-            ref={(ref) => { this._webview = ref; }}
-            javaScriptEnabled
-            injectedJavaScript={patchPostMessageJsCode}
-            onMessage={this.onHiddenMessage}
-            source={{ uri: this.mapWebViewTypeToUrl() }}
-            onNavigationStateChange={this.onVisibleNavigationStateChange}
-          />
-          <WebView
-            style={{ position: 'absolute', width: Dimensions.get('screen').width, zIndex: 0 }}
-            javaScriptEnabled
-            injectedJavaScript={patchPostMessageJsCode}
-            onMessage={this.onHiddenMessage}
-            onNavigationStateChange={this.onHiddenNavigationStateChange}
-            ref={(ref) => { this._hiddenWebview = ref; }}
-            source={{ uri: tag ? `https://instagram.com/explore/tags/${tag}` : 'https://instagram.com/explore/' }}
-          />
+          <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, zIndex: 0 }}>
+              <WebView
+                javaScriptEnabled
+                injectedJavaScript={patchPostMessageJsCode}
+                onMessage={this.onHiddenMessage}
+                onNavigationStateChange={this.onHiddenNavigationStateChange}
+                ref={(ref) => { this._hiddenWebview = ref; }}
+                source={{ uri: tag ? `https://instagram.com/explore/tags/${tag}` : 'https://instagram.com/explore/' }}
+              />
+            </View>
+            <View style={{ position: 'absolute', overflow: 'hidden', }}>
+              <WebView
+                style={{ height: Dimensions.get('screen').height, width: Dimensions.get('screen').width, zIndex: 1 }}
+                ref={(ref) => { this._webview = ref; }}
+                javaScriptEnabled
+                injectedJavaScript={patchPostMessageJsCode}
+                onMessage={this.onHiddenMessage}
+                source={{ uri: this.mapWebViewTypeToUrl() }}
+                onNavigationStateChange={this.onVisibleNavigationStateChange}
+              />
+            </View>
+          </View>
+          { tag ? 
+            <TouchableOpacity style={styles.skipButton} onPress={this.updatePictureLinkIndex}>
+              <Text>Skip</Text>
+            </TouchableOpacity> :
+            null
+          }
         </View>
     );
   }
