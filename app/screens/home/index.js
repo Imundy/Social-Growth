@@ -56,16 +56,6 @@ export default class Home extends Component {
   }
 
   storeAccounts = async ({ accounts }) => {
-    // const insta = accounts.filter(account => account.type === 'instagram');
-    // if (insta.length !== 0) {
-    //   insta = await Promise.all(insta.map(async (account) => {
-    //     const me = await fetch(`https://api.instagram.com/v1/users/self/?access_token=${account.tokens[0]}`).then(response => response.json());
-    //     return { ...me.data, accountId: account.id, accessToken: account.tokens[0] };
-    //   }));
-    //   await AsyncStorage.setItem('accounts:instagram', JSON.stringify(insta));
-    //   await AsyncStorage.setItem('currentAccount:instagram', JSON.stringify(insta[0]));
-    // }
-
     let twitterAccounts = accounts.filter(account => account.type === 'twitter');
     if (twitterAccounts.length !== 0) {
       try {
@@ -142,7 +132,6 @@ export default class Home extends Component {
   }
 
   register = async () => {
-    console.log('register');
     if (this.state.passwordError || this.state.emailError || this.state.email === '' || this.state.password === '' || this.state.password !== this.state.confirmation) {
       this.validateEmail();
       this.validateConfirmation();

@@ -34,7 +34,6 @@ export default class Settings extends Component {
   componentDidMount = async () => {
     let user = await AsyncStorage.getItem('user');
 
-    this.setupInstagram();
     this.setupTwitter();
     this.setupFacebook();
 
@@ -91,28 +90,6 @@ export default class Settings extends Component {
     });
   }
 
-  setupInstagram = async () => {
-    let instagram = await AsyncStorage.getItem('currentAccount:instagram');
-    let instagramAccounts = await AsyncStorage.getItem('accounts:instagram');
-
-    instagramAccounts = instagramAccounts && JSON.parse(instagramAccounts);
-    instagram = instagram && JSON.parse(instagram);
-
-    if (instagramAccounts != null) {
-      instagramAccounts = instagramAccounts.map(account => ({
-        ...account,
-        id: account.id,
-        profileImage: account.profile_picture,
-        displayName: account.full_name,
-      }));
-    }
-
-    this.setState({
-      instagram,
-      instagramAccounts,
-    });
-  }
-
   selectTwitter = async (accountId) => {
     if (accountId !== this.state.twitter.id) {
       const currentAccount = this.state.twitterAccounts.find(account => account.id === accountId);
@@ -123,23 +100,11 @@ export default class Settings extends Component {
     }
   }
 
-  selectInstagram = async (accountId) => {
-    if (accountId !== this.state.instagram.id) {
-      const currentAccount = this.state.instagramAccounts.find(account => account.id === accountId);
-      await AsyncStorage.setItem('currentAccount:instagram', JSON.stringify(currentAccount));
-      this.setState({
-        instagram: currentAccount,
-      });
-    }
-  }
-
   signOut = async () => {
     try {
       await AsyncStorage.removeItem('currentAccount:twitter');
-      await AsyncStorage.removeItem('currentAccount:instagram');
       await AsyncStorage.removeItem('currentAccount:facebook');
       await AsyncStorage.removeItem('accounts:facebook');
-      await AsyncStorage.removeItem('accounts:instagram');
       await AsyncStorage.removeItem('accounts:twitter');
       await AsyncStorage.removeItem('user');
       this.props.navigation.navigate('Home');
@@ -192,29 +157,6 @@ export default class Settings extends Component {
       await this.storeAccounts({ ...twitterResponse, displayName: currentAccountInfo[0].name, profileImage: currentAccountInfo[0].profile_image_url_https }, 'twitter');
     } catch (error) {
       console.warn(error);
-    }
-  }
-
-  addInstagramAccount = async (accessToken) => {
-    try {
-      const { instagramAccounts } = this.state;
-      const me = await fetch(`https://api.instagram.com/v1/users/self/?access_token=${accessToken}`).then(response => response.json());
-      const newAccount = {
-        ...me.data,
-        accessToken,
-        id: me.data.id,
-        profileImage: me.data.profile_picture,
-        displayName: me.data.full_name,
-        tokens: [accessToken],
-      };
-
-      if (instagramAccounts && instagramAccounts.find(account => account.id === newAccount.id)) {
-        return;
-      }
-
-      await this.storeAccounts(newAccount, 'instagram');
-    } catch (error) {
-      console.log(error);
     }
   }
 
@@ -284,63 +226,7 @@ export default class Settings extends Component {
     }
   }
 
-  onLoadInstagram = () => {
-    this.setState({
-      instagramUrl: `https://instagram.com/oauth/authorize/?client_id=${config.instagramToken}&redirect_uri=${config.instagramRedirect}&response_type=token&scope=public_content+follower_list+relationships`,
-    });
-  }
-
-  onInstagramNavigationStateChange = async (event) => {
-    const token = event.url.split('access_token')[1];
-    if (token != null) {
-      this.setState({
-        isAuthenticatingInstagram: false,
-      });
-      await this.addInstagramAccount(token.substring(1));
-      clearTimeout(this.timeout);
-    }
-
-    if (event.url.indexOf('https://www.instagram.com/accounts/login/') === 0) {
-      clearTimeout(this.timeout);
-    }
-
-    if (this.timeout == null) {
-      this.timeout = setTimeout(() => {
-        this.setState({
-          isAuthenticatingInstagram: false,
-          error: 'timeout',
-        });
-      }, 10000);
-    }
-  }
-
-  authInstagram = () => {
-    this.setState({
-      isAuthenticatingInstagram: true,
-      instagramUrl: 'https://instagram.com/accounts/logout',
-    });
-  }
-
   render() {
-    if (this.state.isAuthenticatingInstagram) {
-      return (
-        <View style={{ top: 0, left: 0, zIndex: 2, width: '100%', height: '100%', backgroundColor: 'white', position: 'absolute', justifyContent: 'center' }}>
-          <View style={{ width: this.state.instagramUrl.indexOf('authorize') !== -1 ? windowWidth : 0, height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-            <WebView
-              style={{ width: this.state.instagramUrl.indexOf('authorize') === -1 ? 0 : windowWidth, height: '100%', marginTop: 72 }}
-              source={{ uri: this.state.instagramUrl }}
-              ref={(ref) => { this.webview = ref; }}
-              onNavigationStateChange={this.onInstagramNavigationStateChange}
-              onLoad={this.onLoadInstagram}
-            />
-            <TouchableOpacity style={styles.cancel} onPress={() => { this.setState({ isAuthenticatingInstagram: false }); }}>
-              <Text style={{ color: 'white', fontSize: 20 }}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      );
-    }
-
     return (
       <ScrollView style={styles.container}>
         <View style={styles.header}>
@@ -371,19 +257,6 @@ export default class Settings extends Component {
             </View> :
             this.state.twitterAccounts.map(account =>
               <Account key={`twitter-${account.id}`} removeAccount={this.removeAccount} social="twitter" account={account} selectAccount={this.selectTwitter} selectedAccountId={this.state.twitter.id} />)
-          }
-        </View>
-        <View style={{ paddingTop: 20, paddingHorizontal: 20 }}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.title}>Instagram</Text>
-            <TouchableOpacity style={styles.addAccount} onPress={this.authInstagram}><Text style={{ color: colors.blue }}>+ Add account</Text></TouchableOpacity>
-          </View>
-          {(!this.state.instagramAccounts || this.state.instagramAccounts.length === 0) ?
-            <View style={styles.row}>
-              <Text style={{ fontSize: 16, color: colors.darkGrey, padding: 12 }}>No Instagram accounts</Text>
-            </View> :
-            this.state.instagramAccounts.map(account =>
-              <Account key={`instagram-${account.id}`} removeAccount={this.removeAccount} social="instagram" account={account} selectAccount={this.selectInstagram} selectedAccountId={this.state.instagram.id} />)
           }
         </View>
         <View style={{ paddingTop: 20, paddingHorizontal: 20 }}>
