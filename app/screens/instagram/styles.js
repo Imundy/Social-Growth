@@ -1,4 +1,5 @@
 import { Dimensions } from 'react-native';
+import colors from '../../styles/colors';
 
 const styles = {
   container: {
@@ -22,10 +23,8 @@ const styles = {
   },
   skipButton: {
     width: Dimensions.get('screen').width,
+    flexDirection: 'row',
     height: 50,
-    fontSize: 20,
-    borderTopWidth: 1,
-    borderColor: '#CCC',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFF',
